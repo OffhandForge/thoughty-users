@@ -1,7 +1,7 @@
 package com.biezbardis.thoughtyauth.controller;
 
-import com.biezbardis.thoughtyauth.dto.JwtAuthenticationResponse;
 import com.biezbardis.thoughtyauth.dto.AuthenticationRequest;
+import com.biezbardis.thoughtyauth.dto.JwtAuthenticationResponse;
 import com.biezbardis.thoughtyauth.dto.RegisterRequest;
 import com.biezbardis.thoughtyauth.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
