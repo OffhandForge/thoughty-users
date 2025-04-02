@@ -49,7 +49,7 @@ public class JwtService {
     /**
      * Access token validation check
      *
-     * @param token access token
+     * @param token       access token
      * @param userDetails user data
      * @return true, if token is valid
      */
@@ -61,9 +61,9 @@ public class JwtService {
     /**
      * Extracting data from a token
      *
-     * @param token access token
+     * @param token           access token
      * @param claimsResolvers data extraction function
-     * @param <T> data type
+     * @param <T>             data type
      * @return data
      */
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolvers) {

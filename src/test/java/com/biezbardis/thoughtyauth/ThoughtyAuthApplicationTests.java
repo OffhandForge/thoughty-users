@@ -29,6 +29,8 @@ public class ThoughtyAuthApplicationTests {
             .withDatabaseName("testdb")
             .withUsername("test_user")
             .withPassword("test_pass");
+    @Autowired
+    private MockMvc mockMvc;
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -37,9 +39,6 @@ public class ThoughtyAuthApplicationTests {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
     }
-
-    @Autowired
-    private MockMvc mockMvc;
 
     @Test
     @DisplayName("Test user registration")
