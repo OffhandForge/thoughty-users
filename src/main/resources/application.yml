@@ -2,7 +2,7 @@ server:
   port: ${PORT:8080}
 spring:
   application:
-    name: thoughty-auth
+    name: thoughty-users
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/thoughty}
@@ -17,4 +17,4 @@ spring:
         format_sql: true
 token:
   signing:
-    key: ${SIGN_TOKEN:at-least-256-bits-long-super-secret-key}
+    key: ${SIGN_TOKEN:5E2C5B4E9A3D2F8C1B7F5A0E8F1D9B7C6E1A3B4C5D7F1E8A2B4C3D5E7F8A1B2}
