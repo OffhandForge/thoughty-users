@@ -1,0 +1,30 @@
+# Interpolation syntax
+# https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#interpolation-syntax
+# Use postgres/example user/password credentials
+version: '3.9'
+
+services:
+
+  db:
+    image: postgres:17.4-bookworm
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 64mb
+    # or set shared memory limit when deploy via swarm stack
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-thoughty}
+    ports:
+      - "${DB_LOCAL_PORT:-5432}:${DB_DOCKER_PORT:-5432}"
+
+#  adminer:
+#    image: adminer
+#    restart: always
+#    ports:
+#      - 8080:8080

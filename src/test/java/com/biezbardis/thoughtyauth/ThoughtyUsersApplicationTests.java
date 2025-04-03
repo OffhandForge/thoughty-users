@@ -1,7 +1,6 @@
 package com.biezbardis.thoughtyauth;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,6 +13,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,14 +21,28 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @AutoConfigureMockMvc
-public class ThoughtyAuthApplicationTests {
+public class ThoughtyUsersApplicationTests {
 
     @Container
     static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.4-bookworm")
             .withDatabaseName("testdb")
             .withUsername("test_user")
             .withPassword("test_pass");
+    public static final String TOKEN_PATTERN = "^eyJhbG[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_.+/=]*$";
+    @Autowired
+    private MockMvc mockMvc;
+
+    @BeforeAll
+    static void beforeAll() {
+        postgres.start();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        postgres.stop();
+    }
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -38,10 +52,7 @@ public class ThoughtyAuthApplicationTests {
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
     }
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Test
+    @Test @Order(1)
     @DisplayName("Test user registration")
     void testRegisterUser() throws Exception {
         String json = """
@@ -52,35 +63,29 @@ public class ThoughtyAuthApplicationTests {
                 }
                 """;
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/users-service/v1/register")
                         .contentType("application/json")
                         .content(json))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("testuser"))
-                .andExpect(jsonPath("$.email").value("test@example.com"));
+                .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.token").value(matchesPattern(TOKEN_PATTERN)));
     }
 
-    @Test
+    @Test @Order(2)
     @DisplayName("Test user login")
     void testLogin() throws Exception {
         String json = """
                 {
-                  "email": "test@example.com",
-                  "password": "password123"
+                	"username": "testuser",
+                	"password": "password123"
                 }
                 """;
 
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/users-service/v1/login")
                         .contentType("application/json")
                         .content(json))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists());
-    }
-
-    @Test
-    @DisplayName("Test user logout")
-    void testLogout() throws Exception {
-        mockMvc.perform(post("/api/auth/logout"))
-                .andExpect(status().isOk());
+                .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.token").value(matchesPattern(TOKEN_PATTERN)));
     }
 }
