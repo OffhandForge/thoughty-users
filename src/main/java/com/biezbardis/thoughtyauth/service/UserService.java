@@ -1,6 +1,5 @@
 package com.biezbardis.thoughtyauth.service;
 
-import com.biezbardis.thoughtyauth.entity.Role;
 import com.biezbardis.thoughtyauth.entity.User;
 import com.biezbardis.thoughtyauth.exceptions.AlreadyInUseException;
 import com.biezbardis.thoughtyauth.repository.UserRepository;
@@ -73,17 +72,5 @@ public class UserService {
     public User getCurrentUser() {
         var username = SecurityContextHolder.getContext().getAuthentication().getName();
         return getByUsername(username);
-    }
-
-    /**
-     * Granting administrator rights to the current user
-     * <p>
-     * Need for demo
-     */
-    @Deprecated
-    public void getAdmin() {
-        var user = getCurrentUser();
-        user.setRole(Role.ROLE_ADMIN);
-        save(user);
     }
 }
