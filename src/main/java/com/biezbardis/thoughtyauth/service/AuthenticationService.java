@@ -1,7 +1,7 @@
 package com.biezbardis.thoughtyauth.service;
 
-import com.biezbardis.thoughtyauth.dto.JwtAuthenticationResponse;
 import com.biezbardis.thoughtyauth.dto.AuthenticationRequest;
+import com.biezbardis.thoughtyauth.dto.JwtAuthenticationResponse;
 import com.biezbardis.thoughtyauth.dto.RegisterRequest;
 import com.biezbardis.thoughtyauth.entity.Role;
 import com.biezbardis.thoughtyauth.entity.User;
