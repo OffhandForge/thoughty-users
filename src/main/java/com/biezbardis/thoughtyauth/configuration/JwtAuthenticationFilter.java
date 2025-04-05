@@ -22,7 +22,7 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String TOKEN_PREFIX = "Bearer ";
     private static final String HEADER_NAME = "Authorization";
 
     private final JwtService jwtService;
@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String jwt = authHeader.substring(BEARER_PREFIX.length());
+        String jwt = authHeader.substring(TOKEN_PREFIX.length());
         String username = jwtService.extractUserName(jwt);
 
         if (StringUtils.isNotBlank(username) && isAuthenticationAbsent()) {
@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isInvalidHeader(String authHeader) {
-        return StringUtils.isBlank(authHeader) || !authHeader.startsWith(BEARER_PREFIX);
+        return StringUtils.isBlank(authHeader) || !authHeader.startsWith(TOKEN_PREFIX);
     }
 
     private boolean isAuthenticationAbsent() {

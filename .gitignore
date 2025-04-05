@@ -38,3 +38,6 @@ out/
 
 ### OSX ###
 .DS_Store
+
+### Secrets ###
+secret/

@@ -36,8 +36,9 @@ public class AuthenticationService {
 
         userService.create(user);
 
-        var jwt = jwtService.generateToken(user);
-        return new JwtAuthenticationResponse(jwt);
+        var accessToken = jwtService.generateAccessToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
+        return new JwtAuthenticationResponse(accessToken, refreshToken);
     }
 
     /**
@@ -56,7 +57,8 @@ public class AuthenticationService {
                 .userDetailsService()
                 .loadUserByUsername(request.getUsername());
 
-        var jwt = jwtService.generateToken(user);
-        return new JwtAuthenticationResponse(jwt);
+        var accessToken = jwtService.generateAccessToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
+        return new JwtAuthenticationResponse(accessToken, refreshToken);
     }
 }
