@@ -1,3 +1,5 @@
+microservice:
+
 server:
   port: ${PORT:8080}
 spring:
@@ -16,5 +18,43 @@ spring:
       hibernate:
         format_sql: true
 token:
+  issuer: https://domain.com
+  audience: https://domain.com
   signing:
-    key: ${SIGN_TOKEN:5E2C5B4E9A3D2F8C1B7F5A0E8F1D9B7C6E1A3B4C5D7F1E8A2B4C3D5E7F8A1B2}
+    privateKey: """-----BEGIN PRIVATE KEY-----
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***=
+-----END PRIVATE KEY-----"""
+    publicKey: """-----BEGIN PUBLIC KEY-----
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+-----END PUBLIC KEY-----"""
