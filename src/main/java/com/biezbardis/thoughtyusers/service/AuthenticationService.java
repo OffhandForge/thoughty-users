@@ -1,0 +1,65 @@
+package com.biezbardis.thoughtyusers.service;
+
+import com.biezbardis.thoughtyusers.dto.AuthenticationRequest;
+import com.biezbardis.thoughtyusers.dto.AuthenticationResponse;
+import com.biezbardis.thoughtyusers.dto.RegisterRequest;
+import com.biezbardis.thoughtyusers.entity.Role;
+import com.biezbardis.thoughtyusers.entity.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class AuthenticationService {
+    private final UserService userService;
+    private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+
+    /**
+     * Registration request
+     *
+     * @param request user data
+     * @return access and refresh tokens
+     */
+    public AuthenticationResponse register(RegisterRequest request) {
+
+        var user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.ROLE_USER)
+                .build();
+
+        userService.create(user);
+
+        var accessToken = jwtService.generateAccessToken(user);
+        var refreshToken = refreshTokenService.generateToken(user);
+        return new AuthenticationResponse(accessToken, refreshToken);
+    }
+
+    /**
+     * User authentication
+     *
+     * @param request user data
+     * @return access and refresh tokens
+     */
+    public AuthenticationResponse login(AuthenticationRequest request) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                request.getUsername(),
+                request.getPassword()
+        ));
+
+        var user = userService
+                .userDetailsService()
+                .loadUserByUsername(request.getUsername());
+
+        var accessToken = jwtService.generateAccessToken(user);
+        var refreshToken = refreshTokenService.generateToken(user);
+        return new AuthenticationResponse(accessToken, refreshToken);
+    }
+}
