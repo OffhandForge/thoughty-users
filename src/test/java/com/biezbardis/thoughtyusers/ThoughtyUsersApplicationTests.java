@@ -1,4 +1,4 @@
-package com.biezbardis.thoughtyauth;
+package com.biezbardis.thoughtyusers;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
