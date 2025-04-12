@@ -1,122 +1,148 @@
-package com.biezbardis.thoughtyauth.service;
+package com.biezbardis.thoughtyusers.service;
 
-import com.biezbardis.thoughtyauth.dto.AuthenticationRequest;
-import com.biezbardis.thoughtyauth.dto.RegisterRequest;
-import com.biezbardis.thoughtyauth.entity.Role;
-import com.biezbardis.thoughtyauth.entity.User;
-import io.jsonwebtoken.Jwts;
+import com.biezbardis.thoughtyusers.dto.AuthenticationRequest;
+import com.biezbardis.thoughtyusers.dto.AuthenticationResponse;
+import com.biezbardis.thoughtyusers.dto.RegisterRequest;
+import com.biezbardis.thoughtyusers.entity.Role;
+import com.biezbardis.thoughtyusers.entity.User;
+import com.biezbardis.thoughtyusers.exceptions.AlreadyInUseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.io.File;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Map;
-
-import static com.biezbardis.thoughtyauth.service.JwtTokenProvider.ACCESS_TOKEN_LIFE;
-import static com.biezbardis.thoughtyauth.service.JwtTokenProvider.CLAIM_SCOPES;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
     @Mock
-    private UserService userService;
+    private AuthenticationManager authenticationManager;
     @Mock
     private JwtService jwtService;
     @Mock
-    private PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder;
     @Mock
-    private AuthenticationManager authManager;
+    private RefreshTokenService refreshTokenService;
+    @Mock
+    private UserDetails userDetails;
+    @Mock
+    private UserDetailsService userDetailsService;
+    @Mock
+    private UserService userService;
     @InjectMocks
-    private AuthenticationService service;
+    private AuthenticationService authenticationService;
 
-    private User user;
-    private AuthenticationRequest authenticationRequest;
-    private RegisterRequest registerRequest;
+    private RegisterRequest regRequest;
+    private AuthenticationRequest authRequest;
 
     @BeforeEach
     void setUp() {
-        user = User.builder()
-                .id(100500L)
-                .username("test_user")
-                .password(passwordEncoder.encode("test_pass"))
-                .email("test_user@email.com")
-                .role(Role.ROLE_ADMIN)
+        regRequest = new RegisterRequest();
+        regRequest.setUsername("test_user");
+        regRequest.setEmail("test@example.com");
+        regRequest.setPassword("plainPassword");
+
+        authRequest = new AuthenticationRequest();
+        authRequest.setUsername("test_user");
+        authRequest.setPassword("plainPassword");
+    }
+
+    @Test
+    void register_ShouldCreateUserAndReturnTokens() {
+        String encodedPassword = "encodedPassword";
+        String expectedAccessToken = "access-token";
+        String expectedRefreshToken = "refresh-token";
+
+        User expectedUser = User.builder()
+                .username(regRequest.getUsername())
+                .email(regRequest.getEmail())
+                .password(encodedPassword)
+                .role(Role.ROLE_USER)
                 .build();
 
-        authenticationRequest = new AuthenticationRequest();
-        authenticationRequest.setUsername("test_user");
-        authenticationRequest.setPassword("test_pass");
+        when(passwordEncoder.encode(regRequest.getPassword())).thenReturn(encodedPassword);
+        when(jwtService.generateAccessToken(any(User.class))).thenReturn(expectedAccessToken);
+        when(refreshTokenService.generateToken(any(User.class))).thenReturn(expectedRefreshToken);
 
-        registerRequest = new RegisterRequest();
-        registerRequest.setUsername("test_user");
-        registerRequest.setPassword("test_pass");
-        registerRequest.setEmail("test_user@email.com");
+        AuthenticationResponse response = authenticationService.register(regRequest);
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userService).create(userCaptor.capture());
+        User actualUser = userCaptor.getValue();
+
+        assertEquals(expectedUser.getUsername(), actualUser.getUsername());
+        assertEquals(expectedUser.getEmail(), actualUser.getEmail());
+        assertEquals(expectedUser.getPassword(), actualUser.getPassword());
+        assertEquals(expectedUser.getRole(), actualUser.getRole());
+
+        assertEquals(expectedAccessToken, response.getAccessToken());
+        assertEquals(expectedRefreshToken, response.getRefreshToken());
     }
 
     @Test
-    void register() {
-        Date now = new Date(System.currentTimeMillis());
-        Date expireAt = new Date(System.currentTimeMillis() + ACCESS_TOKEN_LIFE);
-        String jwt = Jwts.builder()
-                .issuer("issuer")
-                .subject("test_user")
-                .audience().add("audience").and()
-                .issuedAt(now)
-                .expiration(expireAt)
-                .claims(Map.of(CLAIM_SCOPES, "POST /users-service/v1/register"))
-                .signWith()
-        when(userService.create(user)).thenReturn(user);
-        when(jwtService.generateAccessToken(user)).thenReturn()
+    void register_ShouldThrowExceptionWhenUsernameAlreadyExists() {
+        when(passwordEncoder.encode(anyString())).thenReturn("encoded");
+        doThrow(new AlreadyInUseException("Username already exists"))
+                .when(userService).create(any(User.class));
 
+        assertThrows(AlreadyInUseException.class, () -> authenticationService.register(regRequest));
     }
 
     @Test
-    void login() {
+    void login_ShouldReturnTokensWhenCredentialsAreValid() {
+        String accessToken = "access-token";
+        String refreshToken = "refresh-token";
 
+        when(userService.userDetailsService()).thenReturn(userDetailsService);
+        when(userDetailsService.loadUserByUsername(authRequest.getUsername())).thenReturn(userDetails);
+        when(jwtService.generateAccessToken(userDetails)).thenReturn(accessToken);
+        when(refreshTokenService.generateToken(userDetails)).thenReturn(refreshToken);
+
+        AuthenticationResponse response = authenticationService.login(authRequest);
+
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(userService.userDetailsService()).loadUserByUsername(authRequest.getUsername());
+        verify(jwtService).generateAccessToken(userDetails);
+        verify(refreshTokenService).generateToken(userDetails);
+
+        assertEquals(accessToken, response.getAccessToken());
+        assertEquals(refreshToken, response.getRefreshToken());
     }
 
-    private PrivateKey getPrivateKey() {
-        String key = jwtSigningPrivateKey.replaceAll("-----BEGIN PRIVATE KEY-----", "")
-                .replaceAll("-----END PRIVATE KEY-----", "")
-                .replaceAll("\\s+", "");
+    @Test
+    void login_ShouldThrowExceptionWhenAuthenticationFails() {
+        doThrow(new BadCredentialsException("Bad credentials"))
+                .when(authenticationManager)
+                .authenticate(any(UsernamePasswordAuthenticationToken.class));
 
-        byte[] keyBytes = Base64.getDecoder().decode(key);
-        var spec = new PKCS8EncodedKeySpec(keyBytes);
-
-        try {
-            return KeyFactory.getInstance("RSA").generatePrivate(spec);
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) { // TODO implement exception handler
-            throw new RuntimeException(e);
-        }
+        assertThrows(BadCredentialsException.class, () -> authenticationService.login(authRequest));
     }
 
-    private PublicKey getPublicKey() {
-        String key = File().replaceAll("-----BEGIN PUBLIC KEY-----", "")
-                .replaceAll("-----END PUBLIC KEY-----", "")
-                .replaceAll("\\s+", "");
+    @Test
+    void login_ShouldThrowExceptionWhenUserNotFound() {
+        when(userService.userDetailsService()).thenReturn(userDetailsService);
+        when(userDetailsService.loadUserByUsername(authRequest.getUsername()))
+                .thenThrow(new UsernameNotFoundException("User not found"));
 
-        byte[] keyBytes = Base64.getDecoder().decode(key);
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        doNothing().when(authenticationManager)
+                .authenticate(any(UsernamePasswordAuthenticationToken.class));
 
-        try {
-            return KeyFactory.getInstance("RSA").generatePublic(spec);
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) { // TODO implement exception handler
-            throw new RuntimeException(e);
-        }
+        assertThrows(UsernameNotFoundException.class, () -> authenticationService.login(authRequest));
     }
-
 }
