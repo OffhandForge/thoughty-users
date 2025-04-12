@@ -1,6 +1,7 @@
 package com.biezbardis.thoughtyusers.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,7 +92,13 @@ public class JwtTokenProvider implements JwtService {
 
     @Override
     public boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date(System.currentTimeMillis()));
+        Date exp;
+        try {
+            exp = extractExpiration(token);
+        } catch (ExpiredJwtException e) {
+            return true;
+        }
+        return exp.before(new Date(System.currentTimeMillis()));
     }
 
     private Set<String> extractAudience(String token) {
@@ -124,7 +131,7 @@ public class JwtTokenProvider implements JwtService {
      *
      * @return private key
      */
-    private PrivateKey getPrivateKey() {
+    PrivateKey getPrivateKey() {
         String key = jwtSigningPrivateKey.replaceAll("-----BEGIN PRIVATE KEY-----", "")
                 .replaceAll("-----END PRIVATE KEY-----", "")
                 .replaceAll("\\s+", "");
@@ -144,7 +151,7 @@ public class JwtTokenProvider implements JwtService {
      *
      * @return public key
      */
-    private PublicKey getPublicKey() {
+    PublicKey getPublicKey() {
         String key = jwtSigningPublicKey.replaceAll("-----BEGIN PUBLIC KEY-----", "")
                 .replaceAll("-----END PUBLIC KEY-----", "")
                 .replaceAll("\\s+", "");
