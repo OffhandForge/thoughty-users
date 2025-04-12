@@ -1,9 +1,9 @@
-package com.biezbardis.thoughtyauth.service;
+package com.biezbardis.thoughtyusers.service;
 
-import com.biezbardis.thoughtyauth.entity.Role;
-import com.biezbardis.thoughtyauth.entity.User;
-import com.biezbardis.thoughtyauth.exceptions.AlreadyInUseException;
-import com.biezbardis.thoughtyauth.repository.UserRepository;
+import com.biezbardis.thoughtyusers.entity.Role;
+import com.biezbardis.thoughtyusers.entity.User;
+import com.biezbardis.thoughtyusers.exceptions.AlreadyInUseException;
+import com.biezbardis.thoughtyusers.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,28 +28,25 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-    private User user;
-
-    @InjectMocks
-    private UserService service;
-
-    @Mock
-    private UserRepository mockUserRepository;
-
-    @Mock
-    private SecurityContext securityContext;
-
     @Mock
     private Authentication authentication;
+    @Mock
+    private UserRepository mockUserRepository;
+    @Mock
+    private SecurityContext securityContext;
+    @InjectMocks
+    private UserServiceImpl service;
 
+    private User user;
 
     @BeforeEach
     void init() {
-        user = new User();
-        user.setUsername("test_user");
-        user.setEmail("test_user@email.com");
-        user.setPassword("test_pass");
-        user.setRole(Role.ROLE_ADMIN);
+        user = User.builder()
+                .username("test_user")
+                .email("test_user@email.com")
+                .password("test_pass")
+                .role(Role.ROLE_ADMIN)
+                .build();
     }
 
     @Test
@@ -89,11 +86,6 @@ class UserServiceTest {
         var thrown = assertThrows(AlreadyInUseException.class,
                 () -> service.create(user));
         assertTrue(thrown.getMessage().contains("Email \"test_user@email.com\" is already in use"));
-    }
-
-    @Test
-    void testGetAdmin() {
-
     }
 
     @Test
