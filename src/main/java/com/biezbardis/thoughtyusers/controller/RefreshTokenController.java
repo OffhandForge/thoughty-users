@@ -1,5 +1,6 @@
 package com.biezbardis.thoughtyusers.controller;
 
+import com.biezbardis.thoughtyusers.ApiVersion;
 import com.biezbardis.thoughtyusers.dto.RefreshTokenRequest;
 import com.biezbardis.thoughtyusers.dto.RefreshTokenResponse;
 import com.biezbardis.thoughtyusers.service.RefreshTokenService;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/users-service/v1")
+@RequestMapping(ApiVersion.V1)
 @RequiredArgsConstructor
 @Tag(name = "Access token renewal")
 public class RefreshTokenController {

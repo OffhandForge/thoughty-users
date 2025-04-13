@@ -21,7 +21,7 @@ token:
   issuer: https://domain.com
   audience: https://domain.com
   signing:
-    privateKey: """-----BEGIN PRIVATE KEY-----
+    privateKey: "-----BEGIN PRIVATE KEY-----
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
@@ -48,8 +48,8 @@ token:
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***=
------END PRIVATE KEY-----"""
-    publicKey: """-----BEGIN PUBLIC KEY-----
+-----END PRIVATE KEY-----"
+    publicKey: "-----BEGIN PUBLIC KEY-----
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
@@ -57,4 +57,4 @@ token:
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
------END PUBLIC KEY-----"""
+-----END PUBLIC KEY-----"

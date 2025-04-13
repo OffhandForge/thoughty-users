@@ -3,7 +3,6 @@ package com.biezbardis.thoughtyusers.service;
 import com.biezbardis.thoughtyusers.entity.Role;
 import com.biezbardis.thoughtyusers.entity.User;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,23 +12,23 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class JwtTokenProviderTest {
 
     @Mock
-    private RequestMappingHandlerMapping handlerMapping;
+    private EndpointCollector endpointCollector;
     @InjectMocks
     private JwtTokenProvider jwtTokenProvider;
 
@@ -91,12 +90,17 @@ class JwtTokenProviderTest {
                 .password("test_pass")
                 .role(Role.ROLE_ADMIN)
                 .build();
+
+        lenient().when(endpointCollector.getEndpoints()).thenReturn(
+                Stream.of("POST /api/v1/login",
+                                "POST /api/v1/register",
+                                "POST /api/v1/refresh-token")
+                        .collect(Collectors.toCollection(HashSet::new))
+        );
     }
 
     @Test
     void generateAccessToken_ShouldGenerateValidJwt() {
-        when(handlerMapping.getHandlerMethods()).thenReturn(Collections.emptyMap());
-
         String token = jwtTokenProvider.generateAccessToken(user);
 
         assertNotNull(token);
@@ -112,8 +116,6 @@ class JwtTokenProviderTest {
                 .password("test_pass")
                 .role(Role.ROLE_USER)
                 .build();
-
-        when(handlerMapping.getHandlerMethods()).thenReturn(Collections.emptyMap());
 
         String token = jwtTokenProvider.generateAccessToken(user);
 
