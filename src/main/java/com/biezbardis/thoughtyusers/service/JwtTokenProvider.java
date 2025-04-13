@@ -3,11 +3,11 @@ package com.biezbardis.thoughtyusers.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -20,9 +20,7 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,7 +40,8 @@ public class JwtTokenProvider implements JwtService {
     @Value("${token.signing.publicKey}")
     private String jwtSigningPublicKey;
 
-    private final RequestMappingHandlerMapping handlerMapping;
+    @NonNull
+    private final EndpointCollector collector;
 
     @Override
     public Set<String> extractScopes(String token) {
@@ -70,7 +69,7 @@ public class JwtTokenProvider implements JwtService {
                 .audience().add(workingAudience).and()
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_LIFE))
-                .claims(Map.of(CLAIM_SCOPES, getAllEndpoints()))
+                .claims(Map.of(CLAIM_SCOPES, collector.getEndpoints()))
                 .signWith(getPrivateKey()).compact();
 
     }
@@ -164,30 +163,5 @@ public class JwtTokenProvider implements JwtService {
         } catch (InvalidKeySpecException | NoSuchAlgorithmException e) { // TODO implement exception handler
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Obtaining the set of current API endpoints
-     *
-     * @return set of API endpoints
-     */
-    private Set<String> getAllEndpoints() {
-        return handlerMapping.getHandlerMethods()
-                .entrySet().stream()
-                .flatMap(entry -> {
-                    var mapping = entry.getKey();
-                    var methods = mapping.getMethodsCondition().getMethods();
-                    var condition = Objects.requireNonNull(mapping.getPatternsCondition());
-                    var paths = condition.getPatterns();
-
-                    Set<String> result = new HashSet<>();
-                    for (var method : methods) {
-                        for (var path : paths) {
-                            result.add(method.name() + " " + path);
-                        }
-                    }
-                    return result.stream();
-                })
-                .collect(Collectors.toSet());
     }
 }

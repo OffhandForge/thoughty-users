@@ -31,12 +31,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class ThoughtyUsersApplicationTests {
 
+    public static final String TOKEN_PATTERN = "^eyJhbG[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_.+/=]*$";
+    public static final String UUID_REGEX = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
+
     @Container
     static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.4-bookworm")
             .withDatabaseName("testdb")
             .withUsername("test_user")
             .withPassword("test_pass");
-    public static final String TOKEN_PATTERN = "^eyJhbG[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_.+/=]*$";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -58,7 +61,8 @@ public class ThoughtyUsersApplicationTests {
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
     }
 
-    @Test @Order(1)
+    @Test
+    @Order(1)
     @DisplayName("Test user registration")
     void testRegisterUser() throws Exception {
         String json = """
@@ -69,15 +73,18 @@ public class ThoughtyUsersApplicationTests {
                 }
                 """;
 
-        mockMvc.perform(post("/users-service/v1/register")
+        mockMvc.perform(post(ApiVersion.V1 + "/register")
                         .contentType("application/json")
                         .content(json))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").isNotEmpty())
-                .andExpect(jsonPath("$.token").value(matchesPattern(TOKEN_PATTERN)));
+                .andExpect(jsonPath("$.accessToken").isNotEmpty())
+                .andExpect(jsonPath("$.accessToken").value(matchesPattern(TOKEN_PATTERN)))
+                .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+                .andExpect(jsonPath("$.refreshToken").value(matchesPattern(UUID_REGEX)));
     }
 
-    @Test @Order(2)
+    @Test
+    @Order(2)
     @DisplayName("Test user login")
     void testLogin() throws Exception {
         String json = """
@@ -87,11 +94,13 @@ public class ThoughtyUsersApplicationTests {
                 }
                 """;
 
-        mockMvc.perform(post("/users-service/v1/login")
+        mockMvc.perform(post(ApiVersion.V1 + "/login")
                         .contentType("application/json")
                         .content(json))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").isNotEmpty())
-                .andExpect(jsonPath("$.token").value(matchesPattern(TOKEN_PATTERN)));
+                .andExpect(jsonPath("$.accessToken").isNotEmpty())
+                .andExpect(jsonPath("$.accessToken").value(matchesPattern(TOKEN_PATTERN)))
+                .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+                .andExpect(jsonPath("$.refreshToken").value(matchesPattern(UUID_REGEX)));
     }
 }

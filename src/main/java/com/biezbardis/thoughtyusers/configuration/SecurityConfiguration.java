@@ -1,5 +1,6 @@
 package com.biezbardis.thoughtyusers.configuration;
 
+import com.biezbardis.thoughtyusers.ApiVersion;
 import com.biezbardis.thoughtyusers.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -42,7 +43,7 @@ public class SecurityConfiguration {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/users-service/v1/**").permitAll()
+                        .requestMatchers(ApiVersion.V1 + "/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
                         // TODO add admin panel
                         // .requestMatchers("/endpoint", "/admin/**").hasRole("ADMIN")

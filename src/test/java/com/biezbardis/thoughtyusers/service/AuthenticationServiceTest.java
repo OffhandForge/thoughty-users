@@ -21,10 +21,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -140,9 +140,7 @@ class AuthenticationServiceTest {
         when(userDetailsService.loadUserByUsername(authRequest.getUsername()))
                 .thenThrow(new UsernameNotFoundException("User not found"));
 
-        doNothing().when(authenticationManager)
-                .authenticate(any(UsernamePasswordAuthenticationToken.class));
-
-        assertThrows(UsernameNotFoundException.class, () -> authenticationService.login(authRequest));
+        var thrown = assertThrows(BadCredentialsException.class, () -> authenticationService.login(authRequest));
+        assertEquals("Bad credentials", thrown.getMessage());
     }
 }

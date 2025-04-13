@@ -1,5 +1,6 @@
 package com.biezbardis.thoughtyusers.controller;
 
+import com.biezbardis.thoughtyusers.ApiVersion;
 import com.biezbardis.thoughtyusers.dto.AuthenticationRequest;
 import com.biezbardis.thoughtyusers.dto.AuthenticationResponse;
 import com.biezbardis.thoughtyusers.dto.RegisterRequest;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/users-service/v1")
+@RequestMapping(ApiVersion.V1)
 @RequiredArgsConstructor
 @Tag(name = "Authentication")
 public class AuthenticationController {
