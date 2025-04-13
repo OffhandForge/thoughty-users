@@ -1,9 +1,11 @@
 package com.biezbardis.thoughtyusers.controller;
 
 import com.biezbardis.thoughtyusers.dto.AuthenticationRequest;
+import com.biezbardis.thoughtyusers.dto.AuthenticationResponse;
 import com.biezbardis.thoughtyusers.dto.RegisterRequest;
 import com.biezbardis.thoughtyusers.service.AuthenticationService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -11,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationControllerTest {
@@ -18,7 +21,7 @@ class AuthenticationControllerTest {
     private AuthenticationService authService;
 
     @InjectMocks
-    private AuthenticationController authenticationController;
+    private AuthenticationController authController;
 
     private RegisterRequest regRequest;
     private AuthenticationRequest authRequest;
@@ -35,21 +38,26 @@ class AuthenticationControllerTest {
         authRequest.setPassword("test_pass");
     }
 
-    // TODO fix test
-//    @Test
-//    void register() {
-//        when(authService.register(regRequest)).thenReturn(new AuthenticationResponse("Bearer eyJhb_"));
-//        var actual = authController.register(regRequest);
-//        assertNotNull(actual);
-//        assertEquals("Bearer eyJhb_", actual.getToken());
-//    }
+    @Test
+    void register_shouldReturnCorrectResponse() {
+        when(authService.register(regRequest))
+                .thenReturn(new AuthenticationResponse("Bearer eyJhb_", "xxxxxxxx"));
 
-    // TODO Fix token
-//    @Test
-//    void login() {
-//        when(authService.login(authRequest)).thenReturn(new AuthenticationResponse("Bearer eyJhb_"));
-//        var actual = authController.login(authRequest);
-//        assertNotNull(actual);
-//        assertEquals("Bearer eyJhb_", actual.getToken());
-//    }
+        var actual = authController.register(regRequest);
+
+        assertNotNull(actual);
+        assertEquals("Bearer eyJhb_", actual.getAccessToken());
+        assertEquals("xxxxxxxx", actual.getRefreshToken());
+    }
+
+    @Test
+    void login_shouldReturnCorrectResponse() {
+        when(authService.login(authRequest))
+                .thenReturn(new AuthenticationResponse("Bearer eyJhb_", "xxxxxxxx"));
+        var actual = authController.login(authRequest);
+
+        assertNotNull(actual);
+        assertEquals("Bearer eyJhb_", actual.getAccessToken());
+        assertEquals("xxxxxxxx", actual.getRefreshToken());
+    }
 }

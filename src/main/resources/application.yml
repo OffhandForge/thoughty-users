@@ -21,7 +21,7 @@ token:
   issuer: https://domain.com
   audience: https://domain.com
   signing:
-    privateKey: """-----BEGIN PRIVATE KEY-----
+    privateKey: "-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDP3Fc10WGWg9NF
 69dwU31/mVU5mud58L7lc4Fn8OjqYHzgZX5SZKGTuFtAMhzHcvP5rgqIGvW5nv+x
 Q2Zeym7vGpUjpV2Jr+RB4sAAkuMs2j2wx4LerevGuf9Cf4dsI+4szI86USLM0lBM
@@ -48,8 +48,8 @@ zam3UGRL38yoOTrr3hOZ7blsw+3JYzoNA0oE7RoHAoGACgNBqq9AlK2T1/LQfuI8
 bzoZUiS8HVml1Jqr8vnYeGnUqezo66+tgWO55UWlmCmJNa7N/tyPbbAYrm7cO5s4
 y6GvDdoEGMKc2UxJc4VkY4VL2wGz8UjeHxOq9rLDopy114LCXtHC+n5voEe4BWWi
 lFG1Z9RwADohKPJIBR2x2/Q=
------END PRIVATE KEY-----"""
-    publicKey: """-----BEGIN PUBLIC KEY-----
+-----END PRIVATE KEY-----"
+    publicKey: "-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz9xXNdFhloPTRevXcFN9
 f5lVOZrnefC+5XOBZ/Do6mB84GV+UmShk7hbQDIcx3Lz+a4KiBr1uZ7/sUNmXspu
 7xqVI6Vdia/kQeLAAJLjLNo9sMeC3q3rxrn/Qn+HbCPuLMyPOlEizNJQTAMYaZkO
@@ -57,4 +57,4 @@ mFj/D6+nqDcigVTtMigzPYEduutdwIgdKrcxtrpEvsM16J1zBRHdHztHlRXUD4Jp
 7kFQRPtKF3iIQOi9FSzpvTJQNtGlZa68/ep6dFEJEZS2+R9K8F+WA2IRgkJfLQrS
 kc2u0Anbll6T7EIFJFUEM+EiyS25/dtFIS+uNlWP7e/waHy0tJTb4W+x7OV5GPLo
 xwIDAQAB
------END PUBLIC KEY-----"""
+-----END PUBLIC KEY-----"

@@ -7,7 +7,10 @@ import com.biezbardis.thoughtyusers.entity.Role;
 import com.biezbardis.thoughtyusers.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -54,9 +57,12 @@ public class AuthenticationService {
                 request.getPassword()
         ));
 
-        var user = userService
-                .userDetailsService()
-                .loadUserByUsername(request.getUsername());
+        UserDetails user;
+        try {
+            user = userService.userDetailsService().loadUserByUsername(request.getUsername());
+        } catch (UsernameNotFoundException e) {
+            throw new BadCredentialsException("Bad credentials");
+        }
 
         var accessToken = jwtService.generateAccessToken(user);
         var refreshToken = refreshTokenService.generateToken(user);
