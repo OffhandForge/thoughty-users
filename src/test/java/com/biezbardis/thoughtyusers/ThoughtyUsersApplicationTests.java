@@ -73,7 +73,7 @@ public class ThoughtyUsersApplicationTests {
                 }
                 """;
 
-        mockMvc.perform(post(ApiVersion.V1 + "/register")
+        mockMvc.perform(post("/api/v1/register")
                         .contentType("application/json")
                         .content(json))
                 .andExpect(status().isOk())
@@ -94,7 +94,7 @@ public class ThoughtyUsersApplicationTests {
                 }
                 """;
 
-        mockMvc.perform(post(ApiVersion.V1 + "/login")
+        mockMvc.perform(post("/api/v1/login")
                         .contentType("application/json")
                         .content(json))
                 .andExpect(status().isOk())
