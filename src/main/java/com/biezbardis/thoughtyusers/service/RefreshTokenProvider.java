@@ -50,7 +50,7 @@ public class RefreshTokenProvider implements RefreshTokenService {
 
         String userName = jwtService.extractUserName(jwt);
         if (userName == null) {
-            throw new IllegalArgumentException("Access token does not belong to user");
+            throw new IllegalArgumentException("Access token has no subject");
         }
 
         User user = userRepository.findByUsername(userName)
@@ -75,7 +75,7 @@ public class RefreshTokenProvider implements RefreshTokenService {
         boolean isIssuerValid = refreshToken.getIssuer().equals(issuingAuthority);
         boolean isAudienceValid = refreshToken.getAudience().equals(workingAudience);
         boolean isIssuedBeforeNow = refreshToken.getIssuedAt().before(now);
-        boolean isExpired = refreshToken.getExpiration().after(now);
+        boolean isExpired = refreshToken.getExpiration().before(now);
 
         return isUserValid
                 && isIssuerValid
