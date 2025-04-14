@@ -1,7 +1,7 @@
-microservice:
-
 server:
   port: ${PORT:8080}
+api:
+  base-path: "/api/v1"
 spring:
   application:
     name: thoughty-users

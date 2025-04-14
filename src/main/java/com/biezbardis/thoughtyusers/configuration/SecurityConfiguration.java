@@ -1,8 +1,8 @@
 package com.biezbardis.thoughtyusers.configuration;
 
-import com.biezbardis.thoughtyusers.ApiVersion;
 import com.biezbardis.thoughtyusers.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +31,9 @@ public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserService userService;
 
+    @Value("${api.base-path}")
+    private String basePath;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
@@ -43,7 +46,7 @@ public class SecurityConfiguration {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(ApiVersion.V1 + "/**").permitAll()
+                        .requestMatchers(basePath + "/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
                         // TODO add admin panel
                         // .requestMatchers("/endpoint", "/admin/**").hasRole("ADMIN")
