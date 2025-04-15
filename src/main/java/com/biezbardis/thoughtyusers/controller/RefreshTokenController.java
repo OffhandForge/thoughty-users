@@ -22,6 +22,6 @@ public class RefreshTokenController {
     @Operation(summary = "User is refreshing access token")
     @PostMapping("/refresh-token")
     public RefreshTokenResponse refreshToken(@RequestBody @Valid RefreshTokenRequest request) {
-        return refreshService.refreshToken(request);
+        return refreshService.refreshAccessToken(request);
     }
 }
