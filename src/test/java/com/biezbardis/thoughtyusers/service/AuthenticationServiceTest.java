@@ -78,7 +78,7 @@ class AuthenticationServiceTest {
 
         when(passwordEncoder.encode(regRequest.getPassword())).thenReturn(encodedPassword);
         when(jwtService.generateAccessToken(any(User.class))).thenReturn(expectedAccessToken);
-        when(refreshTokenService.generateToken(any(User.class))).thenReturn(expectedRefreshToken);
+        when(refreshTokenService.generateTokenForUser(any(User.class))).thenReturn(expectedRefreshToken);
 
         AuthenticationResponse response = authenticationService.register(regRequest);
 
@@ -112,14 +112,14 @@ class AuthenticationServiceTest {
         when(userService.userDetailsService()).thenReturn(userDetailsService);
         when(userDetailsService.loadUserByUsername(authRequest.getUsername())).thenReturn(userDetails);
         when(jwtService.generateAccessToken(userDetails)).thenReturn(accessToken);
-        when(refreshTokenService.generateToken(userDetails)).thenReturn(refreshToken);
+        when(refreshTokenService.generateTokenForUser(userDetails)).thenReturn(refreshToken);
 
         AuthenticationResponse response = authenticationService.login(authRequest);
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userService.userDetailsService()).loadUserByUsername(authRequest.getUsername());
         verify(jwtService).generateAccessToken(userDetails);
-        verify(refreshTokenService).generateToken(userDetails);
+        verify(refreshTokenService).generateTokenForUser(userDetails);
 
         assertEquals(accessToken, response.getAccessToken());
         assertEquals(refreshToken, response.getRefreshToken());

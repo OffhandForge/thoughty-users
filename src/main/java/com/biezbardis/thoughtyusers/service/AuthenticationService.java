@@ -41,7 +41,7 @@ public class AuthenticationService {
         userService.create(user);
 
         var accessToken = jwtService.generateAccessToken(user);
-        var refreshToken = refreshTokenService.generateToken(user);
+        var refreshToken = refreshTokenService.generateTokenForUser(user);
         return new AuthenticationResponse(accessToken, refreshToken);
     }
 
@@ -65,7 +65,7 @@ public class AuthenticationService {
         }
 
         var accessToken = jwtService.generateAccessToken(user);
-        var refreshToken = refreshTokenService.generateToken(user);
+        var refreshToken = refreshTokenService.generateTokenForUser(user);
         return new AuthenticationResponse(accessToken, refreshToken);
     }
 }

@@ -68,16 +68,16 @@ class RefreshTokenProviderTest {
     }
 
     @Test
-    void generateToken_ShouldReturnTokenId_WhenUserIsValid() {
+    void generateToken_ShouldReturnTokenForUserId_WhenUserIsValid() {
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(refreshToken);
 
-        String result = refreshTokenProvider.generateToken(userDetails);
+        String result = refreshTokenProvider.generateTokenForUser(userDetails);
 
         assertEquals(refreshToken.getId().toString(), result);
     }
 
     @Test
-    void refreshToken_ShouldReturnNewAccessToken_WhenValid() {
+    void refreshToken_ShouldReturnNewAccessAccessToken_WhenValid() {
         String refreshToken = UUID.randomUUID().toString();
         String accessToken = "access.jwt.token";
         String username = "test-user";
@@ -99,13 +99,13 @@ class RefreshTokenProviderTest {
                         .build()));
         when(jwtService.generateAccessToken(userDetails)).thenReturn("new.access.token");
 
-        RefreshTokenResponse response = refreshTokenProvider.refreshToken(request);
+        RefreshTokenResponse response = refreshTokenProvider.refreshAccessToken(request);
 
         assertEquals("new.access.token", response.getAccessToken());
     }
 
     @Test
-    void refreshToken_ShouldThrowIllegalArgumentExceptionWhenAccessTokenIsInvalid() {
+    void refreshToken_ShouldThrowIllegalArgumentExceptionWhenAccessAccessTokenIsInvalid() {
         RefreshTokenRequest request = new RefreshTokenRequest();
         request.setAccessToken("invalid.jwt");
         request.setRefreshToken("some-refresh-token");
@@ -113,12 +113,12 @@ class RefreshTokenProviderTest {
         when(jwtService.extractUserName("invalid.jwt")).thenReturn(null);
 
         var thrown = assertThrows(IllegalArgumentException.class, () ->
-                refreshTokenProvider.refreshToken(request));
+                refreshTokenProvider.refreshAccessToken(request));
         assertEquals("Access token has no subject", thrown.getMessage());
     }
 
     @Test
-    void refreshToken_ShouldThrowUsernameNotFoundExceptionWhenUserNotFound() {
+    void refreshAccessToken_ShouldThrowUsernameNotFoundExceptionWhenUserNotFound() {
         RefreshTokenRequest request = new RefreshTokenRequest();
         request.setAccessToken("jwt");
         request.setRefreshToken("refresh");
@@ -127,12 +127,12 @@ class RefreshTokenProviderTest {
         when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
         var thrown = assertThrows(UsernameNotFoundException.class, () ->
-                refreshTokenProvider.refreshToken(request));
+                refreshTokenProvider.refreshAccessToken(request));
         assertEquals("User not found: ghost", thrown.getMessage());
     }
 
     @Test
-    void refreshToken_ShouldRevokeAndThrowIllegalStateExceptionWhenTokenIsInvalid() {
+    void refreshToken_ShouldRevokeAndThrowIllegalStateExceptionWhenAccessTokenIsInvalid() {
         RefreshTokenRequest request = new RefreshTokenRequest();
         request.setAccessToken("jwt");
         request.setRefreshToken(refreshToken.getId().toString());
@@ -145,7 +145,7 @@ class RefreshTokenProviderTest {
         when(refreshTokenRepository.findById(refreshToken.getId())).thenReturn(Optional.of(refreshToken));
 
         var thrown = assertThrows(IllegalStateException.class, () ->
-                refreshTokenProvider.refreshToken(request));
+                refreshTokenProvider.refreshAccessToken(request));
 
         assertEquals("Refresh token is no longer valid", thrown.getMessage());
         verify(refreshTokenRepository).deleteById(refreshToken.getId());
@@ -161,7 +161,7 @@ class RefreshTokenProviderTest {
     }
 
     @Test
-    void isTokenValid_ShouldThrowRefreshTokenNotFoundExceptionWhenTokenNotFound() {
+    void isTokenValid_ShouldThrowRefreshTokenNotFoundExceptionWhenAccessTokenNotFound() {
         when(refreshTokenRepository.findById(refreshToken.getId())).thenReturn(Optional.empty());
 
         var thrown = assertThrows(RefreshTokenNotFoundException.class, () ->

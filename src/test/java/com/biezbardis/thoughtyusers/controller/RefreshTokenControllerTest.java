@@ -26,7 +26,7 @@ class RefreshTokenControllerTest {
         request.setAccessToken("accessToken");
         request.setRefreshToken("refreshToken");
 
-        when(refreshService.refreshToken(request)).thenReturn(new RefreshTokenResponse("newAccessToken"));
+        when(refreshService.refreshAccessToken(request)).thenReturn(new RefreshTokenResponse("newAccessToken"));
 
         assertEquals("newAccessToken", refreshTokenController.refreshToken(request).getAccessToken());
     }
