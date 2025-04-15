@@ -11,7 +11,7 @@ public interface RefreshTokenService {
      * @param userDetails user data
      * @return refresh token
      */
-    String generateToken(UserDetails userDetails);
+    String generateTokenForUser(UserDetails userDetails);
 
     /**
      * Refresh access token based on refresh token
@@ -20,7 +20,7 @@ public interface RefreshTokenService {
      * @param request with access and refresh tokens
      * @return AuthenticationResponse
      */
-    RefreshTokenResponse refreshToken(RefreshTokenRequest request);
+    RefreshTokenResponse refreshAccessToken(RefreshTokenRequest request);
 
     /**
      * Refresh token validation check

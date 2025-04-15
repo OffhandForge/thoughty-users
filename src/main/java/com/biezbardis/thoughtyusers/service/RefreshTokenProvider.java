@@ -31,7 +31,7 @@ public class RefreshTokenProvider implements RefreshTokenService {
     private final JwtService jwtService;
 
     @Override
-    public String generateToken(UserDetails userDetails) {
+    public String generateTokenForUser(UserDetails userDetails) {
         var token = RefreshToken.builder()
                 .username(userDetails.getUsername())
                 .issuer(issuingAuthority)
@@ -44,7 +44,7 @@ public class RefreshTokenProvider implements RefreshTokenService {
     }
 
     @Override
-    public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
+    public RefreshTokenResponse refreshAccessToken(RefreshTokenRequest request) {
         String jwt = request.getAccessToken();
         String refreshToken = request.getRefreshToken();
 
