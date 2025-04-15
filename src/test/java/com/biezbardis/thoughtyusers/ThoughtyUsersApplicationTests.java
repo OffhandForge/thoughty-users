@@ -1,5 +1,6 @@
 package com.biezbardis.thoughtyusers;
 
+import com.redis.testcontainers.RedisContainer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,25 +42,36 @@ public class ThoughtyUsersApplicationTests {
             .withUsername("test_user")
             .withPassword("test_pass");
 
+    @Container
+    static final RedisContainer redis = new RedisContainer(DockerImageName.parse("redis:7.4-bookworm"))
+            .withExposedPorts(6379);
+
     @Autowired
     private MockMvc mockMvc;
 
     @BeforeAll
     static void beforeAll() {
         postgres.start();
+        redis.start();
     }
 
     @AfterAll
     static void afterAll() {
         postgres.stop();
+        redis.stop();
     }
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
+        // PostgreSQLContainer
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+
+        // RedisContainer
+        registry.add("spring.data.redis.host", redis::getHost);
+        registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379).toString());
     }
 
     @Test
