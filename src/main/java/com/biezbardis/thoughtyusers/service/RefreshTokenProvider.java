@@ -8,7 +8,6 @@ import com.biezbardis.thoughtyusers.repository.RefreshTokenRepository;
 import com.biezbardis.thoughtyusers.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -53,7 +52,7 @@ public class RefreshTokenProvider implements RefreshTokenService {
         User user = userRepository.findByUsername(userName)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userName));
 
-        if (!isTokenValid(refreshToken, user)) {
+        if (!isTokenValid(refreshToken, user.getUsername())) {
             revoke(refreshToken);
             throw new IllegalStateException("Refresh token is no longer valid");
         }
@@ -62,13 +61,13 @@ public class RefreshTokenProvider implements RefreshTokenService {
     }
 
     @Override
-    public boolean isTokenValid(String token, UserDetails userDetails) {
+    public boolean isTokenValid(String token, String username) {
         Date now = new Date(System.currentTimeMillis());
         var uuid = UUID.fromString(token);
         var refreshToken = refreshTokenRepository.findById(uuid)
                 .orElseThrow(() -> new RefreshTokenNotFoundException("Refresh token not found"));
 
-        boolean isUserValid = refreshToken.getUsername().equals(userDetails.getUsername());
+        boolean isUserValid = refreshToken.getUsername().equals(username);
         boolean isIssuerValid = refreshToken.getIssuer().equals(issuingAuthority);
         boolean isAudienceValid = refreshToken.getAudience().equals(workingAudience);
         boolean isIssuedBeforeNow = refreshToken.getIssuedAt().before(now);
