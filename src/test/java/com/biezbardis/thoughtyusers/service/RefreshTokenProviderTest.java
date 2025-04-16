@@ -1,7 +1,6 @@
 package com.biezbardis.thoughtyusers.service;
 
 import com.biezbardis.thoughtyusers.dto.RefreshTokenRequest;
-import com.biezbardis.thoughtyusers.dto.RefreshTokenResponse;
 import com.biezbardis.thoughtyusers.entity.RefreshToken;
 import com.biezbardis.thoughtyusers.entity.Role;
 import com.biezbardis.thoughtyusers.entity.User;
@@ -71,7 +70,7 @@ class RefreshTokenProviderTest {
     void generateToken_ShouldReturnTokenForUserId_WhenUserIsValid() {
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(refreshToken);
 
-        String result = refreshTokenProvider.generateTokenForUser(userDetails);
+        String result = refreshTokenProvider.generateTokenForUser(userDetails.getUsername());
 
         assertEquals(refreshToken.getId().toString(), result);
     }
@@ -99,9 +98,9 @@ class RefreshTokenProviderTest {
                         .build()));
         when(jwtService.generateAccessToken(userDetails)).thenReturn("new.access.token");
 
-        RefreshTokenResponse response = refreshTokenProvider.refreshAccessToken(request);
+        var token = refreshTokenProvider.refreshAccessToken(request);
 
-        assertEquals("new.access.token", response.getAccessToken());
+        assertEquals("new.access.token", token);
     }
 
     @Test

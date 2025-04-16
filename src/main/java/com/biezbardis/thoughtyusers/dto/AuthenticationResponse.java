@@ -15,7 +15,4 @@ public class AuthenticationResponse {
 
     @Schema(description = "Access token", example = "eyJhxxx...")
     private String accessToken;
-
-    @Schema(description = "Refresh token", example = "xxxxxxxx-xxxx-Bxxx-Axxx-xxxxxxxxxxxx")
-    private String refreshToken;
 }

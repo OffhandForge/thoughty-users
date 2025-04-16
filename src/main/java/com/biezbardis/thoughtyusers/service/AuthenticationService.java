@@ -1,7 +1,6 @@
 package com.biezbardis.thoughtyusers.service;
 
 import com.biezbardis.thoughtyusers.dto.AuthenticationRequest;
-import com.biezbardis.thoughtyusers.dto.AuthenticationResponse;
 import com.biezbardis.thoughtyusers.dto.RegisterRequest;
 import com.biezbardis.thoughtyusers.entity.Role;
 import com.biezbardis.thoughtyusers.entity.User;
@@ -20,16 +19,15 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
-    private final RefreshTokenService refreshTokenService;
     private final UserService userService;
 
     /**
      * Registration request
      *
      * @param request user data
-     * @return access and refresh tokens
+     * @return access token
      */
-    public AuthenticationResponse register(RegisterRequest request) {
+    public String register(RegisterRequest request) {
 
         var user = User.builder()
                 .username(request.getUsername())
@@ -40,18 +38,16 @@ public class AuthenticationService {
 
         userService.create(user);
 
-        var accessToken = jwtService.generateAccessToken(user);
-        var refreshToken = refreshTokenService.generateTokenForUser(user);
-        return new AuthenticationResponse(accessToken, refreshToken);
+        return jwtService.generateAccessToken(user);
     }
 
     /**
      * User authentication
      *
      * @param request user data
-     * @return access and refresh tokens
+     * @return access token
      */
-    public AuthenticationResponse login(AuthenticationRequest request) {
+    public String login(AuthenticationRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 request.getUsername(),
                 request.getPassword()
@@ -64,8 +60,6 @@ public class AuthenticationService {
             throw new BadCredentialsException("Bad credentials");
         }
 
-        var accessToken = jwtService.generateAccessToken(user);
-        var refreshToken = refreshTokenService.generateTokenForUser(user);
-        return new AuthenticationResponse(accessToken, refreshToken);
+        return jwtService.generateAccessToken(user);
     }
 }
