@@ -154,7 +154,7 @@ class RefreshTokenProviderTest {
     void isTokenValid_ShouldReturnTrueWhenTokenIsValid() {
         when(refreshTokenRepository.findById(refreshToken.getId())).thenReturn(Optional.of(refreshToken));
 
-        boolean isValid = refreshTokenProvider.isTokenValid(refreshToken.getId().toString(), this.userDetails);
+        boolean isValid = refreshTokenProvider.isTokenValid(refreshToken.getId().toString(), "test-user");
 
         assertTrue(isValid);
     }
@@ -164,7 +164,7 @@ class RefreshTokenProviderTest {
         when(refreshTokenRepository.findById(refreshToken.getId())).thenReturn(Optional.empty());
 
         var thrown = assertThrows(RefreshTokenNotFoundException.class, () ->
-                refreshTokenProvider.isTokenValid(String.valueOf(refreshToken.getId()), userDetails));
+                refreshTokenProvider.isTokenValid(String.valueOf(refreshToken.getId()), "test-user"));
         assertEquals("Refresh token not found", thrown.getMessage());
     }
 
