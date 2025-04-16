@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,8 +25,10 @@ class RefreshTokenControllerTest {
         request.setAccessToken("accessToken");
         request.setRefreshToken("refreshToken");
 
-        when(refreshService.refreshAccessToken(request)).thenReturn(new RefreshTokenResponse("newAccessToken"));
+        when(refreshService.refreshAccessToken(request)).thenReturn("newAccessToken");
 
-        assertEquals("newAccessToken", refreshTokenController.refreshToken(request).getAccessToken());
+        String actual = refreshTokenController.refreshToken(request).getAccessToken();
+
+        assertEquals("newAccessToken", actual);
     }
 }

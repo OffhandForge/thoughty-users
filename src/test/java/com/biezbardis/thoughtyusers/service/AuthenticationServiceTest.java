@@ -37,8 +37,6 @@ class AuthenticationServiceTest {
     @Mock
     PasswordEncoder passwordEncoder;
     @Mock
-    private RefreshTokenService refreshTokenService;
-    @Mock
     private UserDetails userDetails;
     @Mock
     private UserDetailsService userDetailsService;
@@ -66,7 +64,6 @@ class AuthenticationServiceTest {
     void register_ShouldCreateUserAndReturnAccessToken() {
         String encodedPassword = "encodedPassword";
         String expectedAccessToken = "access-token";
-        String expectedRefreshToken = "refresh-token";
 
         User expectedUser = User.builder()
                 .username(regRequest.getUsername())
@@ -77,7 +74,6 @@ class AuthenticationServiceTest {
 
         when(passwordEncoder.encode(regRequest.getPassword())).thenReturn(encodedPassword);
         when(jwtService.generateAccessToken(any(User.class))).thenReturn(expectedAccessToken);
-        when(refreshTokenService.generateTokenForUser(userDetails.getUsername())).thenReturn(expectedRefreshToken);
 
         var token = authenticationService.register(regRequest);
 
@@ -103,21 +99,18 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void login_ShouldReturnTokensWhenCredentialsAreValid() {
+    void login_ShouldReturnTokenWhenCredentialsAreValid() {
         String accessToken = "access-token";
-        String refreshToken = "refresh-token";
 
         when(userService.userDetailsService()).thenReturn(userDetailsService);
         when(userDetailsService.loadUserByUsername(authRequest.getUsername())).thenReturn(userDetails);
         when(jwtService.generateAccessToken(userDetails)).thenReturn(accessToken);
-        when(refreshTokenService.generateTokenForUser(userDetails.getUsername())).thenReturn(refreshToken);
 
         var token = authenticationService.login(authRequest);
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userService.userDetailsService()).loadUserByUsername(authRequest.getUsername());
         verify(jwtService).generateAccessToken(userDetails);
-        verify(refreshTokenService).generateTokenForUser(userDetails.getUsername());
 
         assertEquals(accessToken, token);
     }

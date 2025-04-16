@@ -1,7 +1,6 @@
 package com.biezbardis.thoughtyusers.service;
 
 import com.biezbardis.thoughtyusers.dto.RefreshTokenRequest;
-import org.springframework.security.core.userdetails.UserDetails;
 
 public interface RefreshTokenService {
     int REFRESH_TOKEN_LIFE = 1000 * 60 * 60 * 24 * 7; // 1 week;
@@ -26,11 +25,11 @@ public interface RefreshTokenService {
     /**
      * Refresh token validation check
      *
-     * @param token       refresh token
-     * @param userDetails user data
+     * @param token    refresh token
+     * @param username user data
      * @return true, if token is valid
      */
-    boolean isTokenValid(String token, UserDetails userDetails);
+    boolean isTokenValid(String token, String username);
 
     void revoke(String token);
 }
