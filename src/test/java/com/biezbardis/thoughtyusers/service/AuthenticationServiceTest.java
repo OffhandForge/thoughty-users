@@ -1,7 +1,6 @@
 package com.biezbardis.thoughtyusers.service;
 
 import com.biezbardis.thoughtyusers.dto.AuthenticationRequest;
-import com.biezbardis.thoughtyusers.dto.AuthenticationResponse;
 import com.biezbardis.thoughtyusers.dto.RegisterRequest;
 import com.biezbardis.thoughtyusers.entity.Role;
 import com.biezbardis.thoughtyusers.entity.User;
@@ -64,7 +63,7 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void register_ShouldCreateUserAndReturnTokens() {
+    void register_ShouldCreateUserAndReturnAccessToken() {
         String encodedPassword = "encodedPassword";
         String expectedAccessToken = "access-token";
         String expectedRefreshToken = "refresh-token";
@@ -78,9 +77,9 @@ class AuthenticationServiceTest {
 
         when(passwordEncoder.encode(regRequest.getPassword())).thenReturn(encodedPassword);
         when(jwtService.generateAccessToken(any(User.class))).thenReturn(expectedAccessToken);
-        when(refreshTokenService.generateTokenForUser(any(User.class))).thenReturn(expectedRefreshToken);
+        when(refreshTokenService.generateTokenForUser(userDetails.getUsername())).thenReturn(expectedRefreshToken);
 
-        AuthenticationResponse response = authenticationService.register(regRequest);
+        var token = authenticationService.register(regRequest);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userService).create(userCaptor.capture());
@@ -91,8 +90,7 @@ class AuthenticationServiceTest {
         assertEquals(expectedUser.getPassword(), actualUser.getPassword());
         assertEquals(expectedUser.getRole(), actualUser.getRole());
 
-        assertEquals(expectedAccessToken, response.getAccessToken());
-        assertEquals(expectedRefreshToken, response.getRefreshToken());
+        assertEquals(expectedAccessToken, token);
     }
 
     @Test
@@ -112,17 +110,16 @@ class AuthenticationServiceTest {
         when(userService.userDetailsService()).thenReturn(userDetailsService);
         when(userDetailsService.loadUserByUsername(authRequest.getUsername())).thenReturn(userDetails);
         when(jwtService.generateAccessToken(userDetails)).thenReturn(accessToken);
-        when(refreshTokenService.generateTokenForUser(userDetails)).thenReturn(refreshToken);
+        when(refreshTokenService.generateTokenForUser(userDetails.getUsername())).thenReturn(refreshToken);
 
-        AuthenticationResponse response = authenticationService.login(authRequest);
+        var token = authenticationService.login(authRequest);
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userService.userDetailsService()).loadUserByUsername(authRequest.getUsername());
         verify(jwtService).generateAccessToken(userDetails);
-        verify(refreshTokenService).generateTokenForUser(userDetails);
+        verify(refreshTokenService).generateTokenForUser(userDetails.getUsername());
 
-        assertEquals(accessToken, response.getAccessToken());
-        assertEquals(refreshToken, response.getRefreshToken());
+        assertEquals(accessToken, token);
     }
 
     @Test

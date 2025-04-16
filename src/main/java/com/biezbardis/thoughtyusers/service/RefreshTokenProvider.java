@@ -1,7 +1,6 @@
 package com.biezbardis.thoughtyusers.service;
 
 import com.biezbardis.thoughtyusers.dto.RefreshTokenRequest;
-import com.biezbardis.thoughtyusers.dto.RefreshTokenResponse;
 import com.biezbardis.thoughtyusers.entity.RefreshToken;
 import com.biezbardis.thoughtyusers.entity.User;
 import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotFoundException;
@@ -19,8 +18,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenProvider implements RefreshTokenService {
-    protected static final int REFRESH_TOKEN_LIFE = 1000 * 60 * 60 * 24 * 7; // 1 week;
-
     @Value("${token.issuer}")
     private String issuingAuthority;
     @Value("${token.audience}")
@@ -31,9 +28,9 @@ public class RefreshTokenProvider implements RefreshTokenService {
     private final JwtService jwtService;
 
     @Override
-    public String generateTokenForUser(UserDetails userDetails) {
+    public String generateTokenForUser(String username) {
         var token = RefreshToken.builder()
-                .username(userDetails.getUsername())
+                .username(username)
                 .issuer(issuingAuthority)
                 .audience(workingAudience)
                 .issuedAt(new Date(System.currentTimeMillis()))
@@ -44,7 +41,7 @@ public class RefreshTokenProvider implements RefreshTokenService {
     }
 
     @Override
-    public RefreshTokenResponse refreshAccessToken(RefreshTokenRequest request) {
+    public String refreshAccessToken(RefreshTokenRequest request) {
         String jwt = request.getAccessToken();
         String refreshToken = request.getRefreshToken();
 
@@ -61,7 +58,7 @@ public class RefreshTokenProvider implements RefreshTokenService {
             throw new IllegalStateException("Refresh token is no longer valid");
         }
 
-        return new RefreshTokenResponse(jwtService.generateAccessToken(user));
+        return jwtService.generateAccessToken(user);
     }
 
     @Override
