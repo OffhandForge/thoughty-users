@@ -7,7 +7,7 @@ services:
 
   db:
     image: postgres:17.4-bookworm
-    restart: unless-stopped
+#    restart: unless-stopped
     # set shared memory limit when using docker-compose
     shm_size: 64mb
     environment:

@@ -1,7 +1,9 @@
 server:
   port: ${PORT:8080}
+
 api:
   base-path: "/api/v1"
+
 spring:
   application:
     name: thoughty-users
@@ -10,6 +12,12 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/thoughty}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: 4
+      connection-timeout: 3000      # default 30_000
+      validation-timeout: 1000      # default 5000
+      max-lifetime: 10000           # default 30min, уменьшает риск закрытия соединений
+      idle-timeout: 10000           # default 600_000
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -21,6 +29,13 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+  lifecycle:
+    timeout-per-shutdown-phase: 5s
+
+logging:
+  level:
+    org.testcontainers: DEBUG
+
 token:
   issuer: https://domain.com
   audience: https://domain.com
