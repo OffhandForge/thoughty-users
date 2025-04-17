@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Duration;
 
 @RestController
-@RequestMapping(ThoughtyUsersApplication.API_BASE_PATH)
+@RequestMapping("${api.base-path}")
 @RequiredArgsConstructor
 @Tag(name = "Authentication")
 public class AuthenticationController {
@@ -54,7 +54,7 @@ public class AuthenticationController {
         return ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
                 .secure(true)
-                .path(ThoughtyUsersApplication.API_BASE_PATH + "/refresh-token")
+                .path("/api/v1/refresh-token")
                 .sameSite("Strict")
                 .maxAge(Duration.ofMillis(RefreshTokenService.REFRESH_TOKEN_LIFE))
                 .build().toString();

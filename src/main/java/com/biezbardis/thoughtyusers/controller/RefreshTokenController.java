@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(ThoughtyUsersApplication.API_BASE_PATH)
+@RequestMapping("${api.base-path}")
 @RequiredArgsConstructor
 @Tag(name = "Access token renewal")
 public class RefreshTokenController {
