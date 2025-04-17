@@ -23,6 +23,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -40,11 +41,13 @@ public class ThoughtyUsersApplicationTests {
     static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.4-bookworm")
             .withDatabaseName("testdb")
             .withUsername("test_user")
-            .withPassword("test_pass");
+            .withPassword("test_pass")
+            .withReuse(true);
 
     @Container
     static final RedisContainer redis = new RedisContainer(DockerImageName.parse("redis:7.4-bookworm"))
-            .withExposedPorts(6379);
+            .withExposedPorts(6379)
+            .withReuse(true);
 
     @Autowired
     private MockMvc mockMvc;
@@ -71,7 +74,7 @@ public class ThoughtyUsersApplicationTests {
 
         // RedisContainer
         registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379).toString());
+        registry.add("spring.data.redis.port", () -> redis.getFirstMappedPort().toString());
     }
 
     @Test
@@ -92,8 +95,13 @@ public class ThoughtyUsersApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.accessToken").value(matchesPattern(TOKEN_PATTERN)))
-                .andExpect(jsonPath("$.refreshToken").isNotEmpty())
-                .andExpect(jsonPath("$.refreshToken").value(matchesPattern(UUID_REGEX)));
+                .andExpect(cookie().exists("refresh_token"))
+                .andExpect(cookie().httpOnly("refresh_token", true))
+                .andExpect(cookie().secure("refresh_token", true))
+                .andExpect(cookie().value("refresh_token", matchesPattern(UUID_REGEX)))
+                .andExpect(cookie().path("refresh_token", "/api/v1/refresh-token"))
+                .andExpect(cookie().sameSite("refresh_token", "Strict"))
+                .andExpect(cookie().maxAge("refresh_token", 604800));
     }
 
     @Test
@@ -113,7 +121,12 @@ public class ThoughtyUsersApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.accessToken").value(matchesPattern(TOKEN_PATTERN)))
-                .andExpect(jsonPath("$.refreshToken").isNotEmpty())
-                .andExpect(jsonPath("$.refreshToken").value(matchesPattern(UUID_REGEX)));
+                .andExpect(cookie().exists("refresh_token"))
+                .andExpect(cookie().httpOnly("refresh_token", true))
+                .andExpect(cookie().secure("refresh_token", true))
+                .andExpect(cookie().value("refresh_token", matchesPattern(UUID_REGEX)))
+                .andExpect(cookie().path("refresh_token", "/api/v1/refresh-token"))
+                .andExpect(cookie().sameSite("refresh_token", "Strict"))
+                .andExpect(cookie().maxAge("refresh_token", 604800));
     }
 }
