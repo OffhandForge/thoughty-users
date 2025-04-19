@@ -73,7 +73,7 @@ class AuthenticationServiceTest {
                 .build();
 
         when(passwordEncoder.encode(regRequest.getPassword())).thenReturn(encodedPassword);
-        when(jwtService.generateAccessToken(any(User.class))).thenReturn(expectedAccessToken);
+        when(jwtService.generateAccessToken("test_user")).thenReturn(expectedAccessToken);
 
         var token = authenticationService.register(regRequest);
 
@@ -104,13 +104,13 @@ class AuthenticationServiceTest {
 
         when(userService.userDetailsService()).thenReturn(userDetailsService);
         when(userDetailsService.loadUserByUsername(authRequest.getUsername())).thenReturn(userDetails);
-        when(jwtService.generateAccessToken(userDetails)).thenReturn(accessToken);
+        when(jwtService.generateAccessToken(userDetails.getUsername())).thenReturn(accessToken);
 
         var token = authenticationService.login(authRequest);
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(userService.userDetailsService()).loadUserByUsername(authRequest.getUsername());
-        verify(jwtService).generateAccessToken(userDetails);
+        verify(jwtService).generateAccessToken(userDetails.getUsername());
 
         assertEquals(accessToken, token);
     }

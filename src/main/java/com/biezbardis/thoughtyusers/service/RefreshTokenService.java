@@ -1,7 +1,5 @@
 package com.biezbardis.thoughtyusers.service;
 
-import com.biezbardis.thoughtyusers.dto.RefreshTokenRequest;
-
 public interface RefreshTokenService {
     int REFRESH_TOKEN_LIFE = 1000 * 60 * 60 * 24 * 7; // 1 week;
 
@@ -17,10 +15,11 @@ public interface RefreshTokenService {
      * Refresh access token based on refresh token
      * It is used to obtain new access token when old is expired
      *
-     * @param request with access and refresh tokens
+     * @param accessToken  old access token
+     * @param refreshToken for getting new access token
      * @return new access token
      */
-    String refreshAccessToken(RefreshTokenRequest request);
+    String refreshAccessToken(String accessToken, String refreshToken);
 
     /**
      * Refresh token validation check
