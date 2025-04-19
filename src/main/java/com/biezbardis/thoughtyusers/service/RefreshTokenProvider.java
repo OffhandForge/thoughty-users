@@ -1,6 +1,5 @@
 package com.biezbardis.thoughtyusers.service;
 
-import com.biezbardis.thoughtyusers.dto.RefreshTokenRequest;
 import com.biezbardis.thoughtyusers.entity.RefreshToken;
 import com.biezbardis.thoughtyusers.entity.User;
 import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotFoundException;
@@ -40,11 +39,8 @@ public class RefreshTokenProvider implements RefreshTokenService {
     }
 
     @Override
-    public String refreshAccessToken(RefreshTokenRequest request) {
-        String jwt = request.getAccessToken();
-        String refreshToken = request.getRefreshToken();
-
-        String userName = jwtService.extractUserName(jwt);
+    public String refreshAccessToken(String accessToken, String refreshToken) {
+        String userName = jwtService.extractUserName(accessToken);
         if (userName == null) {
             throw new IllegalArgumentException("Access token has no subject");
         }
@@ -57,7 +53,7 @@ public class RefreshTokenProvider implements RefreshTokenService {
             throw new IllegalStateException("Refresh token is no longer valid");
         }
 
-        return jwtService.generateAccessToken(user);
+        return jwtService.generateAccessToken(user.getUsername());
     }
 
     @Override

@@ -1,6 +1,10 @@
 package com.biezbardis.thoughtyusers;
 
+import com.biezbardis.thoughtyusers.dto.AuthenticationResponse;
+import com.biezbardis.thoughtyusers.utils.JsonToObjectMapper;
+import com.biezbardis.thoughtyusers.utils.JwtUtils;
 import com.redis.testcontainers.RedisContainer;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -16,12 +20,17 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.Arrays;
+import java.util.Date;
+
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -80,7 +89,7 @@ public class ThoughtyUsersApplicationTests {
     @Test
     @Order(1)
     @DisplayName("Test user registration")
-    void testRegisterUser() throws Exception {
+    void register_shouldSuccessfullyRegisterUserAndReturnTokensWhenProvidedCorrectUserData() throws Exception {
         String json = """
                 {
                   "username": "testuser",
@@ -107,7 +116,7 @@ public class ThoughtyUsersApplicationTests {
     @Test
     @Order(2)
     @DisplayName("Test user login")
-    void testLogin() throws Exception {
+    void login_shouldSuccessfullyAuthenticateUserAndReturnTokensWhenProvidedValidUserData() throws Exception {
         String json = """
                 {
                 	"username": "testuser",
@@ -128,5 +137,58 @@ public class ThoughtyUsersApplicationTests {
                 .andExpect(cookie().path("refresh_token", "/api/v1/refresh-token"))
                 .andExpect(cookie().sameSite("refresh_token", "Strict"))
                 .andExpect(cookie().maxAge("refresh_token", 604800));
+    }
+
+    @Test
+    @Order(3)
+    @DisplayName("Renew access token")
+    void refreshToken_shouldSuccessfullyReturnRenewedAccessTokenWhenProvidedValidRefreshToken() throws Exception {
+        String json = """
+                {
+                  "username": "testuser2",
+                  "email": "test2@example.com",
+                  "password": "password1234"
+                }
+                """;
+
+        MvcResult mvcResult = mockMvc.perform(post("/api/v1/register")
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String content = mvcResult.getResponse().getContentAsString();
+        var initialResponse = JsonToObjectMapper.convert(content, AuthenticationResponse.class);
+        var initialAccessToken = initialResponse.getAccessToken();
+
+        Cookie[] cookies = mvcResult.getResponse().getCookies();
+        Cookie refreshTokenCookie = Arrays.stream(cookies)
+                .filter(cookie -> "refresh_token".equals(cookie.getName()))
+                .findFirst()
+                .orElse(null);
+
+
+        json = String.format("""
+                {
+                	"accessToken": "%s"
+                }
+                """, initialAccessToken);
+
+        MvcResult actual = mockMvc.perform(post("/api/v1/refresh-token")
+                        .contentType("application/json")
+                        .content(json)
+                        .cookie(refreshTokenCookie))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").isNotEmpty())
+                .andExpect(jsonPath("$.accessToken").value(matchesPattern(TOKEN_PATTERN)))
+                .andReturn();
+
+        String jsonString = actual.getResponse().getContentAsString();
+        var response = JsonToObjectMapper.convert(jsonString, AuthenticationResponse.class);
+        var newAccessToken = response.getAccessToken();
+
+        Date newTokenExp = JwtUtils.getExpiration(newAccessToken);
+        Date initialTokenExp = JwtUtils.getExpiration(initialAccessToken);
+        assertTrue(newTokenExp.after(initialTokenExp));
     }
 }
