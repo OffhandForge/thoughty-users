@@ -62,10 +62,10 @@ public class JwtTokenProvider implements JwtService {
     }
 
     @Override
-    public String generateAccessToken(UserDetails userDetails) {
+    public String generateAccessToken(String username) {
         return Jwts.builder()
                 .issuer(issuingAuthority)
-                .subject(userDetails.getUsername())
+                .subject(username)
                 .audience().add(workingAudience).and()
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_LIFE))

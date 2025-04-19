@@ -38,7 +38,7 @@ public class AuthenticationService {
 
         userService.create(user);
 
-        return jwtService.generateAccessToken(user);
+        return jwtService.generateAccessToken(user.getUsername());
     }
 
     /**
@@ -60,6 +60,6 @@ public class AuthenticationService {
             throw new BadCredentialsException("Bad credentials");
         }
 
-        return jwtService.generateAccessToken(user);
+        return jwtService.generateAccessToken(user.getUsername());
     }
 }

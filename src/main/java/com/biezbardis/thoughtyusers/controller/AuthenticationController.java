@@ -1,6 +1,5 @@
 package com.biezbardis.thoughtyusers.controller;
 
-import com.biezbardis.thoughtyusers.ThoughtyUsersApplication;
 import com.biezbardis.thoughtyusers.dto.AuthenticationRequest;
 import com.biezbardis.thoughtyusers.dto.AuthenticationResponse;
 import com.biezbardis.thoughtyusers.dto.RegisterRequest;

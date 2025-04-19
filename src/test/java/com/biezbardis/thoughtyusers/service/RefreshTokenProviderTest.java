@@ -1,6 +1,5 @@
 package com.biezbardis.thoughtyusers.service;
 
-import com.biezbardis.thoughtyusers.dto.RefreshTokenRequest;
 import com.biezbardis.thoughtyusers.entity.RefreshToken;
 import com.biezbardis.thoughtyusers.entity.Role;
 import com.biezbardis.thoughtyusers.entity.User;
@@ -81,10 +80,6 @@ class RefreshTokenProviderTest {
         String accessToken = "access.jwt.token";
         String username = "test-user";
 
-        RefreshTokenRequest request = new RefreshTokenRequest();
-        request.setAccessToken(accessToken);
-        request.setRefreshToken(refreshToken);
-
         when(jwtService.extractUserName(accessToken)).thenReturn(username);
         when(userRepository.findByUsername(username)).thenReturn(Optional.of((User) userDetails));
         when(refreshTokenRepository.findById(UUID.fromString(refreshToken)))
@@ -96,46 +91,34 @@ class RefreshTokenProviderTest {
                         .issuedAt(new Date(System.currentTimeMillis() - 10000))
                         .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_LIFE))
                         .build()));
-        when(jwtService.generateAccessToken(userDetails)).thenReturn("new.access.token");
+        when(jwtService.generateAccessToken(userDetails.getUsername())).thenReturn("new.access.token");
 
-        var token = refreshTokenProvider.refreshAccessToken(request);
+        var actual = refreshTokenProvider.refreshAccessToken(accessToken, refreshToken);
 
-        assertEquals("new.access.token", token);
+        assertEquals("new.access.token", actual);
     }
 
     @Test
     void refreshToken_ShouldThrowIllegalArgumentExceptionWhenAccessAccessTokenIsInvalid() {
-        RefreshTokenRequest request = new RefreshTokenRequest();
-        request.setAccessToken("invalid.jwt");
-        request.setRefreshToken("some-refresh-token");
-
         when(jwtService.extractUserName("invalid.jwt")).thenReturn(null);
 
         var thrown = assertThrows(IllegalArgumentException.class, () ->
-                refreshTokenProvider.refreshAccessToken(request));
+                refreshTokenProvider.refreshAccessToken("invalid.jwt", "refresh.token"));
         assertEquals("Access token has no subject", thrown.getMessage());
     }
 
     @Test
     void refreshAccessToken_ShouldThrowUsernameNotFoundExceptionWhenUserNotFound() {
-        RefreshTokenRequest request = new RefreshTokenRequest();
-        request.setAccessToken("jwt");
-        request.setRefreshToken("refresh");
-
         when(jwtService.extractUserName("jwt")).thenReturn("ghost");
         when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
         var thrown = assertThrows(UsernameNotFoundException.class, () ->
-                refreshTokenProvider.refreshAccessToken(request));
+                refreshTokenProvider.refreshAccessToken("jwt", "refresh"));
         assertEquals("User not found: ghost", thrown.getMessage());
     }
 
     @Test
     void refreshToken_ShouldRevokeAndThrowIllegalStateExceptionWhenAccessTokenIsInvalid() {
-        RefreshTokenRequest request = new RefreshTokenRequest();
-        request.setAccessToken("jwt");
-        request.setRefreshToken(refreshToken.getId().toString());
-
         User user = new User();
         user.setUsername("user");
 
@@ -144,7 +127,7 @@ class RefreshTokenProviderTest {
         when(refreshTokenRepository.findById(refreshToken.getId())).thenReturn(Optional.of(refreshToken));
 
         var thrown = assertThrows(IllegalStateException.class, () ->
-                refreshTokenProvider.refreshAccessToken(request));
+                refreshTokenProvider.refreshAccessToken("jwt", refreshToken.getId().toString()));
 
         assertEquals("Refresh token is no longer valid", thrown.getMessage());
         verify(refreshTokenRepository).deleteById(refreshToken.getId());

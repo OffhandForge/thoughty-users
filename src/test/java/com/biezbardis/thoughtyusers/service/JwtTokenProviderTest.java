@@ -101,7 +101,7 @@ class JwtTokenProviderTest {
 
     @Test
     void generateAccessToken_ShouldGenerateValidJwt() {
-        String token = jwtTokenProvider.generateAccessToken(user);
+        String token = jwtTokenProvider.generateAccessToken(user.getUsername());
 
         assertNotNull(token);
         String subject = jwtTokenProvider.extractUserName(token);
@@ -117,7 +117,7 @@ class JwtTokenProviderTest {
                 .role(Role.ROLE_USER)
                 .build();
 
-        String token = jwtTokenProvider.generateAccessToken(user);
+        String token = jwtTokenProvider.generateAccessToken(user.getUsername());
 
         assertFalse(jwtTokenProvider.isTokenValid(token, wrongUser));
     }

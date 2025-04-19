@@ -25,10 +25,10 @@ public interface JwtService {
     /**
      * Access token generation
      *
-     * @param userDetails user data
+     * @param username user data
      * @return access token
      */
-    String generateAccessToken(UserDetails userDetails);
+    String generateAccessToken(String username);
 
     /**
      * Access token validation check
