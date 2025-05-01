@@ -1,7 +1,5 @@
 package com.biezbardis.thoughtyusers.entity;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +20,6 @@ import java.util.UUID;
 @RedisHash(value = "refresh_tokens", timeToLive = 60 * 60 * 24 * 7) // TTL = 7 days
 public class RefreshToken implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     private String username;
