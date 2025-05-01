@@ -167,7 +167,7 @@ public class ThoughtyUsersApplicationTests {
                 .findFirst()
                 .orElse(null);
 
-        Thread.sleep(2000);
+        Thread.sleep(5000);
 
         json = String.format("""
                 {
