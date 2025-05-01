@@ -83,7 +83,7 @@ public class ThoughtyUsersApplicationTests {
 
         // RedisContainer
         registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port", () -> redis.getFirstMappedPort().toString());
+        registry.add("spring.data.redis.port", redis::getFirstMappedPort);
     }
 
     @Test
@@ -167,6 +167,7 @@ public class ThoughtyUsersApplicationTests {
                 .findFirst()
                 .orElse(null);
 
+        Thread.sleep(2000);
 
         json = String.format("""
                 {
