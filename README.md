@@ -4,59 +4,70 @@ Microservice for providing authentication, authorization and token renewal
 
 ## 1. **Project Setup**
 
-- Create a Spring Boot project with the following dependencies:
-    - Spring Web
-    - Spring Security
-    - Spring Data JPA
-    - PostgreSQL
-    - JWT (`jjwt`)
-    - BCrypt
-    - Lombok
-- Configure the connection to a PostgreSQL database.
-- Set up schema migrations using Flyway.
+The Users Service created with the following main dependencies:
+
+- Spring Data JPA
+- Spring Data Redis
+- Spring Security
+- Spring Testcontainers
+- Spring Web
+- Docker Compose
+- JWT (`jjwt`)
+- Lombok
+- Mockito
+- PostgreSQL
+- Redis
+
+- Set up schema migrations using Flyway. (To be implemented)
 
 ## 2. **Data Model**
 
-- **`users` table**: `id`, `email`, `password`, `roles`, `created_at`, `updated_at`.
-- **`roles` table**: `id`, `name`.
-- **`refresh_tokens` table**: `id`, `user_id`, `token`, `expiry_date`.
+- **`users` table**: `id`, `username`, `password`, `email`, `role`.
+- **`refresh_tokens` table**: `id`, `username`, `issuer`, `audience`, `issuedAt`, `expiration`.
 
-## 3. **Security Implementation**
+## 3. **Security**
 
-- Configure Spring Security for authentication and authorization.
-- Implement `UserDetailsService` to load user details.
-- Set up BCrypt for password hashing.
+- Spring Security configured for authentication and authorization.
+- JWT (`access token`) is used for user authorization.
+- UUID (`refresh token`) is used for renewal access token.
+- BCrypt is used for password hashing.
 
-## 4. **JWT Implementation**
+## 4. **Access and Refresh tokens**
 
-- Create `JwtTokenProvider` for token generation and validation.
-- Configure `JwtAuthenticationFilter` to intercept requests and validate tokens.
-- Implement `AuthenticationController` with the following endpoints:
-    - `/register`
-    - `/login`
-    - `/refresh-token`
+- Access token (`jwt`) contains issuer, subject(username), audience, issued date, expiration date, scopes.
+- RSA256 algorithm is used for signing and verification of access token.
+- Access token has 15 min expiration time and can be refreshed using refresh token.
+- Refresh token (`uuid`) has 7 days expiration time and can be obtained by registration/login.
 
 ## 5. **Login Attempt Limiting**
+
+To be implemented.
 
 - Use Redis to store the number of failed login attempts.
 - Lock a user account after exceeding the limit (e.g., 5 attempts within 10 minutes).
 
 ## 6. **Event Logging**
 
+To be implemented.
+
 - Log successful and failed login attempts.
 - Record password changes and user logouts.
 
 ## 7. **Testing**
 
-- Write unit tests using JUnit 5 and Mockito.
-- Implement integration tests using Testcontainers and MockMvc.
+- Unit tests created using JUnit 5 and Mockito.
+- Integration tests created using Testcontainers and MockMvc.
 
 ## 8. **API Documentation**
+
+To be implemented.
 
 - Use Swagger/OpenAPI to document API endpoints.
 - Include example requests and responses.
 
 ## 9. **Deployment and CI/CD**
+
+To be implemented.
 
 - Create `Dockerfile` and `docker-compose.yml`.
 - Set up CI/CD pipelines using GitHub Actions for automated deployment.
