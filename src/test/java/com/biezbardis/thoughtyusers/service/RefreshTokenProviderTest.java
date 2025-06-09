@@ -135,7 +135,7 @@ class RefreshTokenProviderTest {
 
     @Test
     void isTokenValid_ShouldReturnTrueWhenTokenIsValid() {
-        when(refreshTokenRepository.findById(refreshToken.getId())).thenReturn(Optional.of(refreshToken));
+        when(refreshTokenRepository.findById(refreshToken.getId())).thenReturn(Optional.ofNullable(refreshToken));
 
         boolean isValid = refreshTokenProvider.isTokenValid(refreshToken.getId().toString(), "test-user");
 
