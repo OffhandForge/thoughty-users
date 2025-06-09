@@ -15,9 +15,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +35,7 @@ class AuthenticationServiceTest {
     @Mock
     private JwtService jwtService;
     @Mock
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
     @Mock
     private UserDetails userDetails;
     @Mock
@@ -101,16 +101,17 @@ class AuthenticationServiceTest {
     @Test
     void login_ShouldReturnTokenWhenCredentialsAreValid() {
         String accessToken = "access-token";
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                userDetails.getUsername(),
+                userDetails.getPassword()
+        );
 
-        when(userService.userDetailsService()).thenReturn(userDetailsService);
-        when(userDetailsService.loadUserByUsername(authRequest.getUsername())).thenReturn(userDetails);
-        when(jwtService.generateAccessToken(userDetails.getUsername())).thenReturn(accessToken);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
+        when(jwtService.generateAccessToken(any(String.class))).thenReturn(accessToken);
 
         var token = authenticationService.login(authRequest);
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(userService.userDetailsService()).loadUserByUsername(authRequest.getUsername());
-        verify(jwtService).generateAccessToken(userDetails.getUsername());
 
         assertEquals(accessToken, token);
     }
@@ -126,9 +127,8 @@ class AuthenticationServiceTest {
 
     @Test
     void login_ShouldThrowExceptionWhenUserNotFound() {
-        when(userService.userDetailsService()).thenReturn(userDetailsService);
-        when(userDetailsService.loadUserByUsername(authRequest.getUsername()))
-                .thenThrow(new UsernameNotFoundException("User not found"));
+        when(authenticationManager.authenticate(any()))
+                .thenThrow(new BadCredentialsException("Bad credentials"));
 
         var thrown = assertThrows(BadCredentialsException.class, () -> authenticationService.login(authRequest));
         assertEquals("Bad credentials", thrown.getMessage());
