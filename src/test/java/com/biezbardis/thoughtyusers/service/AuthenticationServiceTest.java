@@ -114,14 +114,11 @@ class AuthenticationServiceTest {
         );
 
         when(authenticationManager.authenticate(authToken)).thenReturn(authToken);
-        when(userService.userDetailsService()).thenReturn(userDetailsService);
-        when(userDetailsService.loadUserByUsername(authRequest.getUsername())).thenReturn(userDetails);
         when(jwtService.generateAccessToken(userDetails.getUsername())).thenReturn(accessToken);
 
         var token = authenticationService.login(authRequest);
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(userService.userDetailsService()).loadUserByUsername(authRequest.getUsername());
         verify(jwtService).generateAccessToken(userDetails.getUsername());
 
         assertEquals(accessToken, token);
