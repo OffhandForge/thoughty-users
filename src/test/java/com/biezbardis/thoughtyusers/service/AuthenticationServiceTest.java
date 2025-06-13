@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -58,6 +57,14 @@ class AuthenticationServiceTest {
         authRequest = new AuthenticationRequest();
         authRequest.setUsername("test_user");
         authRequest.setPassword("plainPassword");
+
+        userDetails = new User(
+                1L,
+                regRequest.getUsername(),
+                regRequest.getPassword(),
+                regRequest.getEmail(),
+                Role.ROLE_ADMIN
+        );
     }
 
     @Test
@@ -101,17 +108,21 @@ class AuthenticationServiceTest {
     @Test
     void login_ShouldReturnTokenWhenCredentialsAreValid() {
         String accessToken = "access-token";
-        Authentication auth = new UsernamePasswordAuthenticationToken(
+        var authToken = new UsernamePasswordAuthenticationToken(
                 userDetails.getUsername(),
                 userDetails.getPassword()
         );
 
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
-        when(jwtService.generateAccessToken(any(String.class))).thenReturn(accessToken);
+        when(authenticationManager.authenticate(authToken)).thenReturn(authToken);
+        when(userService.userDetailsService()).thenReturn(userDetailsService);
+        when(userDetailsService.loadUserByUsername(authRequest.getUsername())).thenReturn(userDetails);
+        when(jwtService.generateAccessToken(userDetails.getUsername())).thenReturn(accessToken);
 
         var token = authenticationService.login(authRequest);
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(userService.userDetailsService()).loadUserByUsername(authRequest.getUsername());
+        verify(jwtService).generateAccessToken(userDetails.getUsername());
 
         assertEquals(accessToken, token);
     }
