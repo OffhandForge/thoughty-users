@@ -49,11 +49,18 @@ public class AuthenticationService {
      * @return JWT access token for the newly created user
      */
     public String login(AuthenticationRequest request) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+        Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 request.getUsername(),
                 request.getPassword()
         ));
 
-        return jwtService.generateAccessToken(authentication.getName());
+        UserDetails user;
+        try {
+            user = userService.userDetailsService().loadUserByUsername(auth.getName());
+        } catch (UsernameNotFoundException e) {
+            throw new BadCredentialsException("Bad credentials");
+        }
+
+        return jwtService.generateAccessToken(user.getUsername());
     }
 }
