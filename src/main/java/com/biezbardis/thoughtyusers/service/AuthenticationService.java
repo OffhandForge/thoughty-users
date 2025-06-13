@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,8 +25,8 @@ public class AuthenticationService {
     /**
      * Registration request
      *
-     * @param request user data
-     * @return access token
+     * @param request contains username, email, and raw password
+     * @return JWT access token for the newly created user
      */
     public String register(RegisterRequest request) {
 
@@ -44,22 +45,15 @@ public class AuthenticationService {
     /**
      * User authentication
      *
-     * @param request user data
-     * @return access token
+     * @param request contains username, and raw password
+     * @return JWT access token for the newly created user
      */
     public String login(AuthenticationRequest request) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 request.getUsername(),
                 request.getPassword()
         ));
 
-        UserDetails user;
-        try {
-            user = userService.userDetailsService().loadUserByUsername(request.getUsername());
-        } catch (UsernameNotFoundException e) {
-            throw new BadCredentialsException("Bad credentials");
-        }
-
-        return jwtService.generateAccessToken(user.getUsername());
+        return jwtService.generateAccessToken(authentication.getName());
     }
 }
