@@ -9,9 +9,8 @@ import java.time.Duration;
 @Service
 @RequiredArgsConstructor
 public class LoginAttemptService {
-
-    private static final int MAX_ATTEMPT = 5;
-    private static final long ATTEMPT_RESET_MINUTES = 10;
+    protected static final int MAX_ATTEMPT = 5;
+    protected static final long ATTEMPT_RESET_MINUTES = 10;
 
     private final StringRedisTemplate redisTemplate;
 

@@ -4,6 +4,7 @@ import com.biezbardis.thoughtyusers.dto.AuthenticationRequest;
 import com.biezbardis.thoughtyusers.dto.AuthenticationResponse;
 import com.biezbardis.thoughtyusers.dto.RegisterRequest;
 import com.biezbardis.thoughtyusers.service.AuthenticationService;
+import com.biezbardis.thoughtyusers.service.LoginAttemptService;
 import com.biezbardis.thoughtyusers.service.RefreshTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +34,8 @@ public class AuthenticationController {
     @Operation(summary = "User is registering")
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid RegisterRequest request, HttpServletResponse response) {
+    public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid RegisterRequest request,
+                                                           HttpServletResponse response) {
         var accessToken = authenticationService.register(request);
         response.addHeader(HttpHeaders.SET_COOKIE, getResponseCookie(request.getUsername()));
         return ResponseEntity.ok(new AuthenticationResponse(accessToken));
@@ -42,7 +44,8 @@ public class AuthenticationController {
     @Operation(summary = "User is logging")
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid AuthenticationRequest request, HttpServletResponse response) {
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid AuthenticationRequest request,
+                                                        HttpServletResponse response) {
         var accessToken = authenticationService.login(request);
         response.addHeader(HttpHeaders.SET_COOKIE, getResponseCookie(request.getUsername()));
         return ResponseEntity.ok(new AuthenticationResponse(accessToken));
