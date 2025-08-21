@@ -14,14 +14,12 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     hikari:
       maximum-pool-size: 4
-      connection-timeout: 3000      # default 30_000
+      connection-timeout: 30000     # default 30_000
       validation-timeout: 1000      # default 5000
-      max-lifetime: 10000           # default 30min, уменьшает риск закрытия соединений
-      idle-timeout: 10000           # default 600_000
+      max-lifetime: 10000           # default 30min
   jpa:
     hibernate:
-      ddl-auto: create-drop
-#    show-sql: true
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -29,14 +27,17 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:secret}
       timeout: 5000
       lettuce:
         pool:
           max-active: 10
           max-idle: 5
-
   lifecycle:
     timeout-per-shutdown-phase: 5s
+  docker:
+    compose:
+      enabled: false
 
 logging:
   level:
