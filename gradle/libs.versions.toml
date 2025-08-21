@@ -1,0 +1,96 @@
+[versions]
+spring-boot = "3.5.4"
+spring-dependency-management = "1.1.7"
+benmanes = "0.52.0"
+
+lombok = "1.18.38"
+
+jjwt = "0.13.0"
+springdoc = "2.8.10"
+groovy = "4.0.28"
+postgresql = "42.7.7"
+
+junit = "5.13.4"
+junit-platform = "1.13.4"
+spring-security-test = "6.5.3"
+testcontainers = "1.21.3"
+testcontainers-redis = "2.2.4"
+mockito = "5.19.0"
+
+jaxb = "4.0.2"
+commons-lang3 = "3.18.0"
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+benmanes = { id = "com.github.ben-manes.versions", version.ref = "benmanes" }
+groovy = { id = "groovy" }
+java = { id = "java" }
+
+[libraries]
+# Lombok
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+# JJWT
+jjwt-api = { group = "io.jsonwebtoken", name = "jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwt" }
+# Spring ecosystem
+springdoc-ui = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+# Spring Starters
+spring-boot-starter = { group = "org.springframework.boot", name = "spring-boot-starter" }
+spring-boot-actuator = { group = "org.springframework.boot", name = "spring-boot-starter-actuator" }
+spring-boot-cache = { group = "org.springframework.boot", name = "spring-boot-starter-cache" }
+spring-boot-data-jpa = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa" }
+spring-boot-data-redis = { group = "org.springframework.boot", name = "spring-boot-starter-data-redis" }
+spring-boot-security = { group = "org.springframework.boot", name = "spring-boot-starter-security" }
+spring-boot-validation = { group = "org.springframework.boot", name = "spring-boot-starter-validation" }
+spring-boot-web = { group = "org.springframework.boot", name = "spring-boot-starter-web" }
+spring-boot-docker-compose = { group = "org.springframework.boot", name = "spring-boot-docker-compose" }
+# Groovy
+groovy = { group = "org.apache.groovy", name = "groovy", version.ref = "groovy" }
+# Database
+postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
+# Test
+junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit" }
+junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit" }
+junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit-platform" }
+# Spring tests
+spring-boot-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
+spring-boot-testcontainers = { group = "org.springframework.boot", name = "spring-boot-testcontainers" }
+spring-security-test = { group = "org.springframework.security", name = "spring-security-test", version.ref = "spring-security-test"}
+# Testcontainers
+testcontainers-junit = { group = "org.testcontainers", name = "junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgres = { group = "org.testcontainers", name = "postgresql", version.ref = "testcontainers" }
+testcontainers-redis = { group = "com.redis", name = "testcontainers-redis", version.ref = "testcontainers-redis" }
+# Mockito
+mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+# Support
+jaxb = { group = "jakarta.xml.bind", name = "jakarta.xml.bind-api", version.ref = "jaxb" }
+commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }
+
+[bundles]
+jjwt = ["jjwt-api", "jjwt-impl", "jjwt-jackson"]
+spring = [
+    "springdoc-ui",
+    "spring-boot-starter",
+    "spring-boot-actuator",
+    "spring-boot-cache",
+    "spring-boot-data-jpa",
+    "spring-boot-data-redis",
+    "spring-boot-security",
+    "spring-boot-validation",
+    "spring-boot-web"
+]
+tests = [
+    "spring-boot-test",
+    "spring-boot-testcontainers",
+    "spring-security-test",
+    "junit-api",
+    "junit-engine",
+    "junit-params",
+    "testcontainers-junit",
+    "testcontainers-postgres",
+    "testcontainers-redis",
+    "mockito"
+]
