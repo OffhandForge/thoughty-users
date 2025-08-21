@@ -41,9 +41,7 @@ The Users Service created with the following main dependencies:
 
 ## 5. **Login Attempt Limiting**
 
-To be implemented.
-
-- Use Redis to store the number of failed login attempts.
+- Redis used to store the number of failed login attempts.
 - Lock a user account after exceeding the limit (e.g., 5 attempts within 10 minutes).
 
 ## 6. **Event Logging**
