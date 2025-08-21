@@ -51,19 +51,28 @@ To be implemented.
 - Log successful and failed login attempts.
 - Record password changes and user logouts.
 
-## 7. **Testing**
+## 7. **Exception Handling**
+
+To be implemented.
+
+- Create `@RestControllerAdvice` for exception handling.
+- Reorganize exceptions.
+
+## 8. **Testing**
+
+Continuous improvement.
 
 - Unit tests created using JUnit 5 and Mockito.
 - Integration tests created using Testcontainers and MockMvc.
 
-## 8. **API Documentation**
+## 9. **API Documentation**
 
 To be implemented.
 
 - Use Swagger/OpenAPI to document API endpoints.
 - Include example requests and responses.
 
-## 9. **Deployment and CI/CD**
+## 10. **Deployment and CI/CD**
 
 To be implemented.
 
