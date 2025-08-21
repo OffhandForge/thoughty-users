@@ -8,17 +8,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.io.IOException;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class LoginRateLimitFilter extends OncePerRequestFilter {
-    @Value("${api.base-path}")
-    private String basePath;
 
     private final LoginAttemptService loginAttemptService;
 
@@ -27,7 +24,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        if ((basePath + "/login").equals(request.getRequestURI()) && "POST".equalsIgnoreCase(request.getMethod())) {
+        if ("/api/v1/login".equals(request.getRequestURI()) && "POST".equalsIgnoreCase(request.getMethod())) {
 
             String username = extractUsername(request);
             if (username != null && loginAttemptService.isBlocked(username)) {
@@ -42,11 +39,18 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     }
 
     private String extractUsername(HttpServletRequest request) {
+        if (!(request instanceof ContentCachingRequestWrapper wrapper)) {
+            return null;
+        }
         try {
-            String body = request.getReader().lines().collect(Collectors.joining());
+            byte[] buf = wrapper.getContentAsByteArray();
+            if (buf.length == 0) {
+                return null;
+            }
+            String body = new String(buf, request.getCharacterEncoding());
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(body);
-            return node.get("username").asText();
+            return node.has("username") ? node.get("username").asText() : null;
         } catch (Exception e) {
             return null;
         }

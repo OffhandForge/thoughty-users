@@ -29,6 +29,7 @@ import java.time.Duration;
 @Tag(name = "Authentication")
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
+    private final LoginAttemptService loginAttemptService;
     private final RefreshTokenService refreshTokenService;
 
     @Operation(summary = "User is registering")
@@ -48,6 +49,7 @@ public class AuthenticationController {
                                                         HttpServletResponse response) {
         var accessToken = authenticationService.login(request);
         response.addHeader(HttpHeaders.SET_COOKIE, getResponseCookie(request.getUsername()));
+        loginAttemptService.loginSucceeded(request.getUsername());
         return ResponseEntity.ok(new AuthenticationResponse(accessToken));
     }
 

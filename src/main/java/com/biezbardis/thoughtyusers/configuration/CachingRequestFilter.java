@@ -9,17 +9,17 @@ import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.io.IOException;
 
-public class LoginCacheRequestFilter extends OncePerRequestFilter {
+public class CachingRequestFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        ContentCachingRequestWrapper wrappedRequest =
+                (request instanceof ContentCachingRequestWrapper)
+                        ? (ContentCachingRequestWrapper) request
+                        : new ContentCachingRequestWrapper(request);
 
-        if (!(request instanceof ContentCachingRequestWrapper)) {
-            request = new ContentCachingRequestWrapper(request);
-        }
-
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(wrappedRequest, response);
     }
 }
