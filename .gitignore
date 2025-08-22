@@ -41,3 +41,8 @@ out/
 
 ### Secrets ###
 secret/
+.env
+
+### Makefile ###
+Makefile
+.logs
