@@ -1,9 +1,9 @@
 plugins {
-    id 'com.github.ben-manes.versions' version '0.52.0' // https://github.com/ben-manes/gradle-versions-plugin
-    id 'groovy'
-    id 'java'
-    id 'org.springframework.boot' version '3.4.4'
-    id 'io.spring.dependency-management' version '1.1.7'
+    alias(libs.plugins.benmanes)
+    alias(libs.plugins.groovy)
+    alias(libs.plugins.java)
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 group = 'com.biezbardis'
@@ -30,43 +30,24 @@ repositories {
 
 dependencies {
     // Lombok
-    annotationProcessor 'org.projectlombok:lombok'
-    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor libs.lombok
+    compileOnly libs.lombok
     // JJWT
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
-    implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
-    implementation 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+    implementation libs.bundles.jjwt
     // Spring
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
-    implementation 'org.springframework.boot:spring-boot-starter'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+    implementation libs.bundles.spring
+    developmentOnly libs.spring.boot.docker.compose
     // Groovy
-    implementation 'org.apache.groovy:groovy'
+    implementation libs.groovy
     // Database
-    runtimeOnly 'org.postgresql:postgresql:42.7.5'
+    implementation libs.postgresql
     // Test
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
-    testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation "org.testcontainers:postgresql:1.20.6"
-    testImplementation 'com.redis:testcontainers-redis:2.2.4'
-    testImplementation 'org.mockito:mockito-core:5.16.1'
-    mockitoAgent 'org.mockito:mockito-core:5.16.1'
+    testRuntimeOnly libs.junit.platform.launcher
+    testImplementation libs.bundles.tests
+    mockitoAgent libs.mockito
     // Support tools
-    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'
-    implementation 'org.apache.commons:commons-lang3:3.17.0'
+    implementation libs.jaxb
+    implementation libs.commons.lang3
 }
 
 tasks.named('test') {
