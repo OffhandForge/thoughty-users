@@ -43,6 +43,7 @@ logging:
   level:
     org.testcontainers: DEBUG
 
+# Just for local development
 token:
   issuer: https://domain.com
   audience: https://domain.com
