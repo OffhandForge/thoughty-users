@@ -1,0 +1,110 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-create-role-type
+      author: alexander
+      changes:
+        - sql:
+            comment: "Создаем enum role (если еще не существует)"
+            splitStatements: false
+            sql: |
+              DO $$
+              BEGIN
+                  BEGIN
+                      CREATE TYPE role AS ENUM ('ROLE_USER', 'ROLE_ADMIN');
+                  EXCEPTION
+                      WHEN duplicate_object THEN null;
+                  END;
+              END$$;
+
+  - changeSet:
+      id: 2-create-roles-table
+      author: alexander
+      changes:
+        - createTable:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: role_name
+                  type: role
+                  constraints:
+                    nullable: false
+                    unique: true
+
+  - changeSet:
+      id: 3-insert-default-roles
+      author: alexander
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: role_name
+                  value: ROLE_USER
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: role_name
+                  value: ROLE_ADMIN
+
+  - changeSet:
+      id: 4-create-user-sequence
+      author: alexander
+      changes:
+        - createSequence:
+            sequenceName: user_id_seq
+            startValue: 1
+            incrementBy: 1
+
+  - changeSet:
+      id: 5-create-users-table
+      author: alexander
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueSequenceNext: user_id_seq
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: username
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: role
+                  type: role
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 6-add-fk-users-role
+      author: alexander
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: users
+            baseColumnNames: role
+            referencedTableName: roles
+            referencedColumnNames: role_name
+            constraintName: fk_users_roles

@@ -40,7 +40,9 @@ dependencies {
     // Groovy
     implementation libs.groovy
     // Database
-    implementation libs.postgresql
+    runtimeOnly libs.postgresql
+    // Liquibase
+    implementation libs.liquibase
     // Test
     testRuntimeOnly libs.junit.platform.launcher
     testImplementation libs.bundles.tests
