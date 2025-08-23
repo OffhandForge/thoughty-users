@@ -1,0 +1,62 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-create-role-type
+      author: alexander
+      changes:
+        - sql:
+            comment: "Create enum role (if not exists)"
+            splitStatements: false
+            sql: |
+              DO $$
+              BEGIN
+                  BEGIN
+                      CREATE TYPE role AS ENUM ('ROLE_USER', 'ROLE_ADMIN');
+                  EXCEPTION
+                      WHEN duplicate_object THEN null;
+                  END;
+              END$$;
+
+  - changeSet:
+      id: 2-create-user-sequence
+      author: alexander
+      changes:
+        - createSequence:
+            sequenceName: user_id_seq
+            startValue: 1
+            incrementBy: 1
+
+  - changeSet:
+      id: 3-create-users-table
+      author: alexander
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  defaultValueSequenceNext: user_id_seq
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: username
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: role
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false

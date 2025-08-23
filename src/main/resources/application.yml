@@ -8,21 +8,22 @@ spring:
   application:
     name: thoughty-users
   datasource:
-    driver-class-name: org.postgresql.Driver
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/thoughty}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     hikari:
-      maximum-pool-size: 4
+      maximum-pool-size: 5
       connection-timeout: 30000     # default 30_000
       validation-timeout: 1000      # default 5000
-      max-lifetime: 10000           # default 30min
+      max-lifetime: 60000           # default 30min
+      keepalive-time: 30000
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    enabled: true
   jpa:
+    open-in-view: false
     hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
+      ddl-auto: validate
   data:
     redis:
       host: ${REDIS_HOST:localhost}
