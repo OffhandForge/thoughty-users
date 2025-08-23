@@ -4,7 +4,7 @@ databaseChangeLog:
       author: alexander
       changes:
         - sql:
-            comment: "Создаем enum role (если еще не существует)"
+            comment: "Create enum role (if not exists)"
             splitStatements: false
             sql: |
               DO $$
@@ -17,44 +17,7 @@ databaseChangeLog:
               END$$;
 
   - changeSet:
-      id: 2-create-roles-table
-      author: alexander
-      changes:
-        - createTable:
-            tableName: roles
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-              - column:
-                  name: role_name
-                  type: role
-                  constraints:
-                    nullable: false
-                    unique: true
-
-  - changeSet:
-      id: 3-insert-default-roles
-      author: alexander
-      changes:
-        - insert:
-            tableName: roles
-            columns:
-              - column:
-                  name: role_name
-                  value: ROLE_USER
-        - insert:
-            tableName: roles
-            columns:
-              - column:
-                  name: role_name
-                  value: ROLE_ADMIN
-
-  - changeSet:
-      id: 4-create-user-sequence
+      id: 2-create-user-sequence
       author: alexander
       changes:
         - createSequence:
@@ -63,7 +26,7 @@ databaseChangeLog:
             incrementBy: 1
 
   - changeSet:
-      id: 5-create-users-table
+      id: 3-create-users-table
       author: alexander
       changes:
         - createTable:
@@ -94,17 +57,6 @@ databaseChangeLog:
                     unique: true
               - column:
                   name: role
-                  type: role
+                  type: VARCHAR(50)
                   constraints:
                     nullable: false
-
-  - changeSet:
-      id: 6-add-fk-users-role
-      author: alexander
-      changes:
-        - addForeignKeyConstraint:
-            baseTableName: users
-            baseColumnNames: role
-            referencedTableName: roles
-            referencedColumnNames: role_name
-            constraintName: fk_users_roles
