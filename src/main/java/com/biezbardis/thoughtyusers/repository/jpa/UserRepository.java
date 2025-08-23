@@ -1,4 +1,4 @@
-package com.biezbardis.thoughtyusers.repository;
+package com.biezbardis.thoughtyusers.repository.jpa;
 
 import com.biezbardis.thoughtyusers.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -9,6 +9,7 @@ jjwt = "0.13.0"
 springdoc = "2.8.10"
 groovy = "4.0.28"
 postgresql = "42.7.7"
+liquibase = "4.33.0"
 
 junit = "5.13.4"
 junit-platform = "1.13.4"
@@ -50,6 +51,8 @@ spring-boot-docker-compose = { group = "org.springframework.boot", name = "sprin
 groovy = { group = "org.apache.groovy", name = "groovy", version.ref = "groovy" }
 # Database
 postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
+# Liquibase
+liquibase = { group = "org.liquibase", name = "liquibase-core", version.ref = "liquibase" }
 # Test
 junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit" }
 junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit" }
@@ -58,7 +61,7 @@ junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform
 # Spring tests
 spring-boot-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
 spring-boot-testcontainers = { group = "org.springframework.boot", name = "spring-boot-testcontainers" }
-spring-security-test = { group = "org.springframework.security", name = "spring-security-test", version.ref = "spring-security-test"}
+spring-security-test = { group = "org.springframework.security", name = "spring-security-test", version.ref = "spring-security-test" }
 # Testcontainers
 testcontainers-junit = { group = "org.testcontainers", name = "junit-jupiter", version.ref = "testcontainers" }
 testcontainers-postgres = { group = "org.testcontainers", name = "postgresql", version.ref = "testcontainers" }

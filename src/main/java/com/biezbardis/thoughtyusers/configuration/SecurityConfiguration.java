@@ -63,7 +63,7 @@ public class SecurityConfiguration {
 
     @Bean
     public LoginRateLimitFilter loginRateLimitFilter() {
-        return new LoginRateLimitFilter(loginAttemptService);
+        return new LoginRateLimitFilter(basePath, loginAttemptService);
     }
 
     @Bean

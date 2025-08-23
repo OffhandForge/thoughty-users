@@ -3,7 +3,7 @@ package com.biezbardis.thoughtyusers.service;
 import com.biezbardis.thoughtyusers.entity.Role;
 import com.biezbardis.thoughtyusers.entity.User;
 import com.biezbardis.thoughtyusers.exceptions.AlreadyInUseException;
-import com.biezbardis.thoughtyusers.repository.UserRepository;
+import com.biezbardis.thoughtyusers.repository.jpa.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
