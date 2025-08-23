@@ -2,7 +2,7 @@ package com.biezbardis.thoughtyusers.service;
 
 import com.biezbardis.thoughtyusers.entity.User;
 import com.biezbardis.thoughtyusers.exceptions.AlreadyInUseException;
-import com.biezbardis.thoughtyusers.repository.UserRepository;
+import com.biezbardis.thoughtyusers.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
