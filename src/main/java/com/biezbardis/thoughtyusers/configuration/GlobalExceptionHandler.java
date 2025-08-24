@@ -33,6 +33,11 @@ public class GlobalExceptionHandler {
         return createErrorResponse(HttpStatus.CONFLICT, "Already In Use", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        return createErrorResponse(HttpStatus.BAD_REQUEST, "Illegal Argument Provided", ex.getMessage(), request);
+    }
+
     @ExceptionHandler(RefreshTokenNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleRefreshTokenNotFoundException(RefreshTokenNotFoundException ex, WebRequest request) {
         return createErrorResponse(HttpStatus.BAD_REQUEST, "Refresh Token Not Found", ex.getMessage(), request);
@@ -44,11 +49,8 @@ public class GlobalExceptionHandler {
     }
 
     // --- Consolidated and Shared Handlers ---
-    @ExceptionHandler({
-            IllegalArgumentException.class,
-            KeyGenerationException.class
-    })
-    public ResponseEntity<ErrorResponse> handleInternalServerErrors(Exception ex, WebRequest request) {
+    @ExceptionHandler(KeyGenerationException.class)
+    public ResponseEntity<ErrorResponse> handleInternalServerErrors(KeyGenerationException ex, WebRequest request) {
         log.error(ex.getMessage(), ex);
         return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "An unexpected error occurred.", request);
     }
