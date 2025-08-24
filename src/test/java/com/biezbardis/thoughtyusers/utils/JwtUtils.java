@@ -1,5 +1,6 @@
 package com.biezbardis.thoughtyusers.utils;
 
+import com.biezbardis.thoughtyusers.exceptions.KeyGenerationException;
 import io.jsonwebtoken.Jwts;
 
 import java.security.KeyFactory;
@@ -42,8 +43,8 @@ public class JwtUtils {
 
         try {
             return KeyFactory.getInstance("RSA").generatePublic(spec);
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) { // TODO implement exception handler
-            throw new RuntimeException(e);
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+            throw new KeyGenerationException("Failed to generate public key", e);
         }
     }
 
