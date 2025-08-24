@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -58,15 +59,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, WebRequest request) {
 
-        Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
-                .collect(Collectors.toMap(
+        Map<String, List<String>> errors = ex.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.groupingBy(
                         FieldError::getField,
-                        fieldError -> {
-                            String message = fieldError.getDefaultMessage();
-                            return (message != null) ? message : "Validation error message not available";
-                        },
-                        (existing, replacement) -> existing
-                ));
+                        Collectors.mapping(fe -> {
+                                    String message = fe.getDefaultMessage();
+                                    return (message != null) ? message : "Validation error message not available";
+                                },
+                                Collectors.toList()
+                        )));
 
         ErrorResponse errorDetails = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
