@@ -16,9 +16,8 @@ The Users Service created with the following main dependencies:
 - Lombok
 - Mockito
 - PostgreSQL
+- Liquibase (for DB migrations)
 - Redis
-
-- Set up schema migrations using Flyway. (To be implemented)
 
 ## 2. **Data Model**
 
@@ -53,10 +52,7 @@ To be implemented.
 
 ## 7. **Exception Handling**
 
-To be implemented.
-
-- Create `@RestControllerAdvice` for exception handling.
-- Reorganize exceptions.
+- Created `@RestControllerAdvice` for exception handling.
 
 ## 8. **Testing**
 
