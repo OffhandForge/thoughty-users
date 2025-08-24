@@ -1,5 +1,6 @@
 package com.biezbardis.thoughtyusers.service;
 
+import com.biezbardis.thoughtyusers.exceptions.KeyGenerationException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -140,8 +141,8 @@ public class JwtTokenProvider implements JwtService {
 
         try {
             return KeyFactory.getInstance("RSA").generatePrivate(spec);
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) { // TODO implement exception handler
-            throw new RuntimeException(e);
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+            throw new KeyGenerationException("Failed to generate private key", e);
         }
     }
 
@@ -160,8 +161,8 @@ public class JwtTokenProvider implements JwtService {
 
         try {
             return KeyFactory.getInstance("RSA").generatePublic(spec);
-        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) { // TODO implement exception handler
-            throw new RuntimeException(e);
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+            throw new KeyGenerationException("Failed to generate public key", e);
         }
     }
 }

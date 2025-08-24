@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
@@ -34,17 +33,15 @@ public class AuthenticationController {
 
     @Operation(summary = "User is registering")
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid RegisterRequest request,
                                                            HttpServletResponse response) {
         var accessToken = authenticationService.register(request);
         response.addHeader(HttpHeaders.SET_COOKIE, getResponseCookie(request.getUsername()));
-        return ResponseEntity.ok(new AuthenticationResponse(accessToken));
+        return new ResponseEntity<>(new AuthenticationResponse(accessToken), HttpStatus.CREATED);
     }
 
     @Operation(summary = "User is logging")
     @PostMapping("/login")
-    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid AuthenticationRequest request,
                                                         HttpServletResponse response) {
         var accessToken = authenticationService.login(request);
