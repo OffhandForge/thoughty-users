@@ -4,6 +4,7 @@ import com.biezbardis.thoughtyusers.dto.AuthenticationRequest;
 import com.biezbardis.thoughtyusers.dto.RegisterRequest;
 import com.biezbardis.thoughtyusers.entity.Role;
 import com.biezbardis.thoughtyusers.entity.User;
+import com.biezbardis.thoughtyusers.exceptions.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -58,9 +59,9 @@ public class AuthenticationService {
             ));
             loginAttemptService.loginSucceeded(request.getUsername());
         } catch (AuthenticationException e) {
-            log.error("An error occurred", e);
+            log.info("Authentication failed for user {}", request.getUsername());
             loginAttemptService.loginFailed(request.getUsername());
-            throw new RuntimeException(e);
+            throw new UnauthorizedException("Invalid credentials", e);
         }
 
         return jwtService.generateAccessToken(auth.getName());
