@@ -6,6 +6,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JwtTokenProvider implements JwtService {
@@ -96,6 +98,7 @@ public class JwtTokenProvider implements JwtService {
         try {
             exp = extractExpiration(token);
         } catch (ExpiredJwtException e) {
+            log.info("User {} has provided an expired token.", extractUserName(token), e);
             return true;
         }
         return exp.before(new Date(System.currentTimeMillis()));
@@ -142,6 +145,7 @@ public class JwtTokenProvider implements JwtService {
         try {
             return KeyFactory.getInstance("RSA").generatePrivate(spec);
         } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+            log.error("Failed to generate private key", e);
             throw new KeyGenerationException("Failed to generate private key", e);
         }
     }
@@ -162,6 +166,7 @@ public class JwtTokenProvider implements JwtService {
         try {
             return KeyFactory.getInstance("RSA").generatePublic(spec);
         } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+            log.error("Failed to generate public key", e);
             throw new KeyGenerationException("Failed to generate public key", e);
         }
     }

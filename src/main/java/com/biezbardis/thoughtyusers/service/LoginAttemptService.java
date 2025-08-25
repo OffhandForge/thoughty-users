@@ -1,11 +1,13 @@
 package com.biezbardis.thoughtyusers.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LoginAttemptService {
@@ -27,6 +29,7 @@ public class LoginAttemptService {
     }
 
     public void loginSucceeded(String username) {
+        log.info("Attempt succeeded for username: {}", username);
         redisTemplate.delete(getKey(username));
     }
 
@@ -37,6 +40,7 @@ public class LoginAttemptService {
         try {
             return Integer.parseInt(val) >= MAX_ATTEMPT;
         } catch (NumberFormatException e) {
+            log.error(e.getMessage(), e);
             return false;
         }
     }
