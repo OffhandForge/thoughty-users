@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,6 +48,6 @@ public class RefreshTokenController {
             )
             @RequestBody @Valid RefreshTokenRequest request) {
         String accessToken = refreshService.refreshAccessToken(request.getAccessToken(), refreshToken);
-        return new ResponseEntity<>(new AuthenticationResponse(accessToken), HttpStatus.CREATED);
+        return ResponseEntity.ok(new AuthenticationResponse(accessToken));
     }
 }

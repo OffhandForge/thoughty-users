@@ -23,7 +23,8 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
      * @return the Redis key string
      */
     private String getKey(String username) {
-        return "login:attempts:" + username;
+        String normalized = username == null ? "" : username;
+        return "login:attempts:" + normalized;
     }
 
     @Override

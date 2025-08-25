@@ -1,6 +1,6 @@
 package com.biezbardis.thoughtyusers.configuration;
 
-import com.biezbardis.thoughtyusers.service.LoginAttemptServiceImpl;
+import com.biezbardis.thoughtyusers.service.LoginAttemptService;
 import com.biezbardis.thoughtyusers.service.UserService;
 import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @RequiredArgsConstructor
 public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final LoginAttemptServiceImpl loginAttemptService;
+    private final LoginAttemptService loginAttemptService;
     private final UserService userService;
 
     @Value("${api.base-path}")
