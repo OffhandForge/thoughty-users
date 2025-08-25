@@ -51,16 +51,10 @@ public class GlobalExceptionHandler {
         return createErrorResponse(HttpStatus.FORBIDDEN, "Too Many Attempts", ex.getMessage(), request);
     }
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
+    @ExceptionHandler({AuthenticationException.class, UnauthorizedException.class})
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(Exception ex, WebRequest request) {
         log.error(ex.getMessage(), ex);
         return createErrorResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", "Authorization failed.", request);
-    }
-
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex, WebRequest request) {
-        log.error(ex.getMessage(), ex);
-        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "An unexpected error occurred.", request);
     }
 
     // --- Consolidated and Shared Handlers ---
