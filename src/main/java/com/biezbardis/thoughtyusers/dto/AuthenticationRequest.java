@@ -10,11 +10,11 @@ import lombok.Data;
 @Schema(description = "Authentication request")
 public class AuthenticationRequest {
 
-    @Schema(description = "Username", example = "JohnDoe")
+    @Schema(description = "Username", example = "John_Doe")
     @Size(min = 5, max = 50, message = "Username must be between 5 and 50 characters long")
     @NotBlank(message = "Username cannot be empty")
     @Pattern(regexp = "^[a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9])[a-zA-Z0-9]$",
-    message = "Username must start and end with alphanumeric characters and may contain digits, dot (.), underscore (_), or hyphen (-)")
+            message = "Username must start and end with alphanumeric characters and may contain digits, dot (.), underscore (_), or hyphen (-)")
     private String username;
 
     @Schema(description = "Password", example = "my_1secret1_password")
