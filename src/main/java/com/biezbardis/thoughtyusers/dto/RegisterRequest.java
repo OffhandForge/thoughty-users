@@ -26,7 +26,7 @@ public class RegisterRequest {
     private String email;
 
     @Schema(description = "Password", example = "my_1secret1_password")
-    @Size(min = 5, max = 255, message = "Password length must be between 8 and 255 characters")
+    @Size(min = 8, max = 64, message = "Password length must be between 8 and 64 characters")
     @NotBlank(message = "Password cannot be empty")
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&-+=()])(?=\\S+$)$",
             message = "Password must contains of at least one digit, one small letter, one capital letter and one symbol")
