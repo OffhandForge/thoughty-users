@@ -8,12 +8,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.io.IOException;
 
+@Slf4j
 @RequiredArgsConstructor
 public class LoginRateLimitFilter extends OncePerRequestFilter {
 
@@ -55,6 +57,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
             JsonNode node = mapper.readTree(body);
             return node.has("username") ? node.get("username").asText() : null;
         } catch (Exception e) {
+            log.error("Failed to extract username.", e);
             return null;
         }
     }
