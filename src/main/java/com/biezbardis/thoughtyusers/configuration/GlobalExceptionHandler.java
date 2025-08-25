@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({AuthenticationException.class, UnauthorizedException.class})
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(Exception ex, WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(RuntimeException ex, WebRequest request) {
         log.error("Authorization failed.", ex);
         return createErrorResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", "Authorization failed.", request);
     }
