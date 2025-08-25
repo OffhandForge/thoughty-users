@@ -45,10 +45,9 @@ The Users Service created with the following main dependencies:
 
 ## 6. **Event Logging**
 
-To be implemented.
-
-- Log successful and failed login attempts.
-- Record password changes and user logouts.
+- Log successful and failed API requests.
+- Log response latency.
+- Log exceptions.
 
 ## 7. **Exception Handling**
 
