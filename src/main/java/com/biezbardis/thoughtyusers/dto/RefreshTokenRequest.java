@@ -8,7 +8,8 @@ import lombok.Data;
 @Schema(description = "Refresh Token renewal request")
 public class RefreshTokenRequest {
 
-    @Schema(description = "Expired access token", example = "eyJhxxx...")
+    @Schema(description = "The previous access token (may be expired)",
+            example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     @NotBlank(message = "Access token cannot be empty")
     private String accessToken;
 }
