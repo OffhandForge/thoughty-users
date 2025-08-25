@@ -2,6 +2,7 @@ package com.biezbardis.thoughtyusers.configuration;
 
 import com.biezbardis.thoughtyusers.service.LoginAttemptService;
 import com.biezbardis.thoughtyusers.service.UserService;
+import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -50,20 +51,24 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(basePath + "/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
-                        // TODO add admin panel
-                        // .requestMatchers("/endpoint", "/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(cachingRequestFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(loginRateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(loggingFilter(), JwtAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
     public LoginRateLimitFilter loginRateLimitFilter() {
         return new LoginRateLimitFilter(basePath, loginAttemptService);
+    }
+
+    @Bean
+    public Filter loggingFilter() {
+        return new LoggingFilter();
     }
 
     @Bean
