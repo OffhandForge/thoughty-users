@@ -9,6 +9,5 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ThoughtyUsersApplication {
     public static void main(String[] args) {
         SpringApplication.run(ThoughtyUsersApplication.class, args);
-        log.info("Thoughty Users Application ended.");
     }
 }
