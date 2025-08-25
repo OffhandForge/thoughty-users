@@ -2,10 +2,15 @@ package com.biezbardis.thoughtyusers.controller;
 
 import com.biezbardis.thoughtyusers.dto.AuthenticationRequest;
 import com.biezbardis.thoughtyusers.dto.AuthenticationResponse;
+import com.biezbardis.thoughtyusers.dto.ErrorResponse;
 import com.biezbardis.thoughtyusers.dto.RegisterRequest;
 import com.biezbardis.thoughtyusers.service.AuthenticationService;
 import com.biezbardis.thoughtyusers.service.RefreshTokenService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -24,12 +29,24 @@ import java.time.Duration;
 @RestController
 @RequestMapping("${api.base-path}")
 @RequiredArgsConstructor
-@Tag(name = "Authentication")
+@Tag(name = "Authentication", description = "Endpoints for user registration and login")
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private final RefreshTokenService refreshTokenService;
 
-    @Operation(summary = "User is registering")
+    @Operation(
+            summary = "Register a new user",
+            description = "Registers a new user account and returns an access token. " +
+                    "Also sets a secure HTTP-only refresh token cookie."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "User registered successfully",
+                    content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "User already exists",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(@RequestBody @Valid RegisterRequest request,
                                                            HttpServletResponse response) {
@@ -38,7 +55,17 @@ public class AuthenticationController {
         return new ResponseEntity<>(new AuthenticationResponse(accessToken), HttpStatus.CREATED);
     }
 
-    @Operation(summary = "User is logging")
+    @Operation(
+            summary = "Login a user",
+            description = "Authenticates a user with credentials and returns an access token. " +
+                    "Also sets a secure HTTP-only refresh token cookie."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Login successful",
+                    content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Invalid username or password",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+    })
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid AuthenticationRequest request,
                                                         HttpServletResponse response) {

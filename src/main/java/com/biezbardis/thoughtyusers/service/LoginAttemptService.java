@@ -1,47 +1,30 @@
 package com.biezbardis.thoughtyusers.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
+public interface LoginAttemptService {
+    /**
+     * Records a failed login attempt for the given username.
+     * <p>
+     * On the first failure, a TTL of 10 minutes
+     * is set for the Redis entry.
+     * </p>
+     *
+     * @param username the username of the failed attempt
+     */
+    void loginFailed(String username);
 
-import java.time.Duration;
+    /**
+     * Resets the login attempts for a given username after a successful login.
+     *
+     * @param username the username of the successful login
+     */
+    void loginSucceeded(String username);
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class LoginAttemptService {
-    protected static final int MAX_ATTEMPT = 5;
-    protected static final long ATTEMPT_RESET_MINUTES = 10;
-
-    private final StringRedisTemplate redisTemplate;
-
-    private String getKey(String username) {
-        return "login:attempts:" + username;
-    }
-
-    public void loginFailed(String username) {
-        String key = getKey(username);
-        Long attempts = redisTemplate.opsForValue().increment(key);
-        if (attempts != null && attempts == 1) {
-            redisTemplate.expire(key, Duration.ofMinutes(ATTEMPT_RESET_MINUTES));
-        }
-    }
-
-    public void loginSucceeded(String username) {
-        log.info("Attempt succeeded for username: {}", username);
-        redisTemplate.delete(getKey(username));
-    }
-
-    public boolean isBlocked(String username) {
-        String key = getKey(username);
-        String val = redisTemplate.opsForValue().get(key);
-        if (val == null) return false;
-        try {
-            return Integer.parseInt(val) >= MAX_ATTEMPT;
-        } catch (NumberFormatException e) {
-            log.error(e.getMessage(), e);
-            return false;
-        }
-    }
+    /**
+     * Checks if a given username is currently blocked due to too many failed attempts.
+     *
+     * @param username the username to check
+     * @return {@code true} if the user has reached or exceeded 5,
+     * {@code false} otherwise
+     */
+    boolean isBlocked(String username);
 }
