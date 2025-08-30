@@ -27,7 +27,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public String register(RegisterRequest request) {
 
-        var user = User.builder()
+        User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
