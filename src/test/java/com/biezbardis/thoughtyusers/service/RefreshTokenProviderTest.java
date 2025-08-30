@@ -62,7 +62,7 @@ class RefreshTokenProviderTest {
     void generateTokenForUser_ShouldSaveAndReturnRefreshToken() {
         RefreshToken saved = RefreshToken.builder()
                 .id(UUID.randomUUID())
-                .username("alex")
+                .username("test-user")
                 .issuer("test-issuer")
                 .audience("test-audience")
                 .issuedAt(new Date())
@@ -71,7 +71,7 @@ class RefreshTokenProviderTest {
 
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(saved);
 
-        String actual = refreshTokenProvider.generateTokenForUser("alex");
+        String actual = refreshTokenProvider.generateTokenForUser("test-user");
 
         assertEquals(saved.getId().toString(), actual);
         verify(refreshTokenRepository).save(any(RefreshToken.class));
