@@ -2,7 +2,7 @@ package com.biezbardis.thoughtyusers;
 
 import com.biezbardis.thoughtyusers.dto.AuthenticationResponse;
 import com.biezbardis.thoughtyusers.utils.JsonToObjectMapper;
-import com.biezbardis.thoughtyusers.utils.JwtUtils;
+import com.biezbardis.thoughtyusers.utils.TestUtils;
 import com.redis.testcontainers.RedisContainer;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.AfterAll;
@@ -26,6 +26,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.security.KeyPair;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -45,6 +46,8 @@ public class ThoughtyUsersApplicationTests {
 
     public static final String TOKEN_PATTERN = "^eyJhbG[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_.+/=]*$";
     public static final String UUID_REGEX = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
+
+    private static final KeyPair KEY_PAIR = TestUtils.getSecurityKeys();
 
     @Container
     static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.4-bookworm")
@@ -84,6 +87,10 @@ public class ThoughtyUsersApplicationTests {
         // RedisContainer
         registry.add("spring.data.redis.host", redis::getHost);
         registry.add("spring.data.redis.port", redis::getFirstMappedPort);
+
+        // SecurityKeys
+        registry.add("token.signing.privateKey", () -> TestUtils.encodePrivateKeyToPEM(KEY_PAIR.getPrivate()));
+        registry.add("token.signing.publicKey", () -> TestUtils.encodePublicKeyToPEM(KEY_PAIR.getPublic()));
     }
 
     @Test
@@ -188,8 +195,8 @@ public class ThoughtyUsersApplicationTests {
         var response = JsonToObjectMapper.convert(jsonString, AuthenticationResponse.class);
         var newAccessToken = response.getAccessToken();
 
-        Date newTokenExp = JwtUtils.getExpiration(newAccessToken);
-        Date initialTokenExp = JwtUtils.getExpiration(initialAccessToken);
+        Date newTokenExp = TestUtils.getExpiration(KEY_PAIR.getPublic(), newAccessToken);
+        Date initialTokenExp = TestUtils.getExpiration(KEY_PAIR.getPublic(), initialAccessToken);
         assertTrue(newTokenExp.after(initialTokenExp));
     }
 }
