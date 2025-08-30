@@ -94,13 +94,7 @@ public class JwtTokenProvider implements JwtService {
 
     @Override
     public boolean isTokenExpired(String token) {
-        Date exp;
-        try {
-            exp = extractExpiration(token);
-        } catch (ExpiredJwtException e) {
-            log.info("User {} has provided an expired token.", extractUserName(token), e);
-            return true;
-        }
+        Date exp = extractExpiration(token);
         return exp.before(new Date(System.currentTimeMillis()));
     }
 
@@ -122,11 +116,17 @@ public class JwtTokenProvider implements JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getPublicKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            return Jwts.parser()
+                    .verifyWith(getPublicKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            Claims claims = e.getClaims();
+            log.info("User {} has provided an expired token.", claims.getSubject(), e);
+            return claims;
+        }
     }
 
     /**

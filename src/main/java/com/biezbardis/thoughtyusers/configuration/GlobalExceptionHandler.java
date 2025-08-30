@@ -7,6 +7,7 @@ import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotFoundException;
 import com.biezbardis.thoughtyusers.exceptions.ResourceNotFoundException;
 import com.biezbardis.thoughtyusers.exceptions.TooManyAttemptsException;
 import com.biezbardis.thoughtyusers.exceptions.UnauthorizedException;
+import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,10 +52,14 @@ public class GlobalExceptionHandler {
         return createErrorResponse(HttpStatus.FORBIDDEN, "Too Many Attempts", ex.getMessage(), request);
     }
 
-    @ExceptionHandler({AuthenticationException.class, UnauthorizedException.class})
+    @ExceptionHandler({AuthenticationException.class,
+            UnauthorizedException.class,
+            JwtException.class
+    })
     public ResponseEntity<ErrorResponse> handleAuthenticationException(RuntimeException ex, WebRequest request) {
-        log.error("Authorization failed.", ex);
-        return createErrorResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", "Authorization failed.", request);
+        log.error("Unauthorized.", ex);
+        String message = (ex instanceof UnauthorizedException) ? ex.getMessage() : "Authorization failed.";
+        return createErrorResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", message, request);
     }
 
     // --- Consolidated and Shared Handlers ---
