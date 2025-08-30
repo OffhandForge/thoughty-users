@@ -27,7 +27,7 @@ public class RefreshTokenProvider implements RefreshTokenService {
 
     @Override
     public String generateTokenForUser(String username) {
-        var token = RefreshToken.builder()
+        RefreshToken token = RefreshToken.builder()
                 .username(username)
                 .issuer(issuingAuthority)
                 .audience(workingAudience)
@@ -59,8 +59,8 @@ public class RefreshTokenProvider implements RefreshTokenService {
     @Override
     public boolean isTokenValid(String token, String username) {
         Date now = new Date(System.currentTimeMillis());
-        var uuid = UUID.fromString(token);
-        var refreshToken = refreshTokenRepository.findById(uuid)
+        UUID uuid = UUID.fromString(token);
+        RefreshToken refreshToken = refreshTokenRepository.findById(uuid)
                 .orElseThrow(() -> new RefreshTokenNotFoundException("Refresh token not found"));
 
         boolean isUserValid = refreshToken.getUsername().equals(username);

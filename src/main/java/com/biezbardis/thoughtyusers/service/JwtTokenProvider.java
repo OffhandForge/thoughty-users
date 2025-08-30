@@ -140,7 +140,7 @@ public class JwtTokenProvider implements JwtService {
                 .replaceAll("\\s+", "");
 
         byte[] keyBytes = Base64.getDecoder().decode(key);
-        var spec = new PKCS8EncodedKeySpec(keyBytes);
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
 
         try {
             return KeyFactory.getInstance("RSA").generatePrivate(spec);
