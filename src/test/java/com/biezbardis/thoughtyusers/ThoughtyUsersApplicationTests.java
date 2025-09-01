@@ -7,15 +7,17 @@ import com.redis.testcontainers.RedisContainer;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -29,6 +31,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.security.KeyPair;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Objects;
 
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -63,6 +66,11 @@ public class ThoughtyUsersApplicationTests {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private JdbcTemplate jdbc;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
 
     @BeforeAll
     static void beforeAll() {
@@ -74,6 +82,12 @@ public class ThoughtyUsersApplicationTests {
     static void afterAll() {
         postgres.stop();
         redis.stop();
+    }
+
+    @BeforeEach
+    void cleanDb() {
+        jdbc.execute("TRUNCATE TABLE users CASCADE;");
+        Objects.requireNonNull(redisTemplate.getConnectionFactory()).getConnection().serverCommands().flushDb();
     }
 
     @DynamicPropertySource
@@ -94,21 +108,20 @@ public class ThoughtyUsersApplicationTests {
     }
 
     @Test
-    @Order(1)
     @DisplayName("Test user registration")
     void register_shouldSuccessfullyRegisterUserAndReturnTokensWhenProvidedCorrectUserData() throws Exception {
         String json = """
                 {
-                  "username": "testuser",
-                  "email": "test@example.com",
-                  "password": "password123"
+                  "username": "test_user",
+                  "email": "test_user@example.com",
+                  "password": "P@ssword123"
                 }
                 """;
 
         mockMvc.perform(post("/api/v1/register")
                         .contentType("application/json")
                         .content(json))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.accessToken").value(matchesPattern(TOKEN_PATTERN)))
                 .andExpect(cookie().exists("refresh_token"))
@@ -121,13 +134,25 @@ public class ThoughtyUsersApplicationTests {
     }
 
     @Test
-    @Order(2)
     @DisplayName("Test user login")
     void login_shouldSuccessfullyAuthenticateUserAndReturnTokensWhenProvidedValidUserData() throws Exception {
         String json = """
                 {
-                	"username": "testuser",
-                	"password": "password123"
+                  "username": "test_user",
+                  "email": "test_user@example.com",
+                  "password": "P@ssword123"
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/register")
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isCreated());
+
+        json = """
+                {
+                  "username": "test_user",
+                  "password": "P@ssword123"
                 }
                 """;
 
@@ -147,26 +172,25 @@ public class ThoughtyUsersApplicationTests {
     }
 
     @Test
-    @Order(3)
     @DisplayName("Renew access token")
     void refreshToken_shouldSuccessfullyReturnRenewedAccessTokenWhenProvidedValidRefreshToken() throws Exception {
         String json = """
                 {
-                  "username": "testuser2",
-                  "email": "test2@example.com",
-                  "password": "password1234"
+                  "username": "test_user",
+                  "email": "test_user@example.com",
+                  "password": "P@ssword123"
                 }
                 """;
 
         MvcResult mvcResult = mockMvc.perform(post("/api/v1/register")
                         .contentType("application/json")
                         .content(json))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn();
 
         String content = mvcResult.getResponse().getContentAsString();
-        var initialResponse = JsonToObjectMapper.convert(content, AuthenticationResponse.class);
-        var initialAccessToken = initialResponse.getAccessToken();
+        AuthenticationResponse initialResponse = JsonToObjectMapper.convert(content, AuthenticationResponse.class);
+        String initialAccessToken = initialResponse.getAccessToken();
 
         Cookie[] cookies = mvcResult.getResponse().getCookies();
         Cookie refreshTokenCookie = Arrays.stream(cookies)
@@ -174,7 +198,7 @@ public class ThoughtyUsersApplicationTests {
                 .findFirst()
                 .orElse(null);
 
-        Thread.sleep(5000);
+        Thread.sleep(1000);
 
         json = String.format("""
                 {
