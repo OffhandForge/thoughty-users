@@ -29,6 +29,7 @@ public class GlobalExceptionHandler {
     // --- Specific Handlers with unique responses ---
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+        log.warn("attempt to get resource failed", ex);
         return createErrorResponse(HttpStatus.NOT_FOUND, "Resource Not Found", ex.getMessage(), request);
     }
 
@@ -49,6 +50,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TooManyAttemptsException.class)
     public ResponseEntity<ErrorResponse> handleTooManyAttemptsException(TooManyAttemptsException ex, WebRequest request) {
+        log.warn("number of attempts exceeded", ex);
         return createErrorResponse(HttpStatus.FORBIDDEN, "Too Many Attempts", ex.getMessage(), request);
     }
 
@@ -57,7 +59,7 @@ public class GlobalExceptionHandler {
             JwtException.class
     })
     public ResponseEntity<ErrorResponse> handleAuthenticationException(RuntimeException ex, WebRequest request) {
-        log.error("Unauthorized.", ex);
+        log.warn("authorization failed", ex);
         String message = (ex instanceof UnauthorizedException) ? ex.getMessage() : "Authorization failed.";
         return createErrorResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", message, request);
     }
@@ -71,6 +73,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, WebRequest request) {
+        log.info(ex.getMessage(), ex);
 
         Map<String, List<String>> errors = ex.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.groupingBy(
