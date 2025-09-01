@@ -16,6 +16,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,23 +42,30 @@ class RefreshTokenProviderTest {
     private UserRepository userRepository;
     @Mock
     private JwtService jwtService;
+    @Mock
+    private Clock clock;
     @InjectMocks
     private RefreshTokenProvider refreshTokenProvider;
 
     private RefreshToken refreshToken;
+    private Instant now;
 
     @BeforeEach
     void setup() {
         ReflectionTestUtils.setField(refreshTokenProvider, "issuingAuthority", "test-issuer");
         ReflectionTestUtils.setField(refreshTokenProvider, "workingAudience", "test-audience");
 
+        now = Instant.parse("2025-08-30T10:00:00Z");
+        lenient().when(clock.instant()).thenReturn(now);
+        lenient().when(clock.getZone()).thenReturn(ZoneOffset.UTC);
+
         refreshToken = RefreshToken.builder()
                 .id(UUID.randomUUID())
                 .username("test-user")
                 .issuer("test-issuer")
                 .audience("test-audience")
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000000))
+                .issuedAt(Date.from(now.minusMillis(1_000)))
+                .expiration(Date.from(now.plusMillis(REFRESH_TOKEN_LIFE)))
                 .build();
     }
 
@@ -65,8 +76,8 @@ class RefreshTokenProviderTest {
                 .username("test-user")
                 .issuer("test-issuer")
                 .audience("test-audience")
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 10000))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(10_000)))
                 .build();
 
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(saved);
@@ -114,8 +125,8 @@ class RefreshTokenProviderTest {
                         .username(username)
                         .issuer("test-issuer")
                         .audience("test-audience")
-                        .issuedAt(new Date(System.currentTimeMillis() - 10000))
-                        .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_LIFE))
+                        .issuedAt(Date.from(now.minusMillis(10_000)))
+                        .expiration(Date.from(now.plusMillis(REFRESH_TOKEN_LIFE)))
                         .build()));
         when(jwtService.generateAccessToken(username)).thenReturn("access-token");
 
@@ -187,8 +198,8 @@ class RefreshTokenProviderTest {
                 .username("test-user")
                 .issuer("test-issuer")
                 .audience("test-audience")
-                .issuedAt(new Date(System.currentTimeMillis() - 10000))
-                .expiration(new Date(System.currentTimeMillis() - 1000))
+                .issuedAt(Date.from(now.minusMillis(10_000)))
+                .expiration(Date.from(now.minusMillis(1_000)))
                 .build();
 
         when(refreshTokenRepository.findById(UUID.fromString(token))).thenReturn(Optional.of(rt));

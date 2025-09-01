@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -24,15 +26,17 @@ public class RefreshTokenProvider implements RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final Clock clock;
 
     @Override
     public String generateTokenForUser(String username) {
+        Instant now = Instant.now(clock);
         RefreshToken token = RefreshToken.builder()
                 .username(username)
                 .issuer(issuingAuthority)
                 .audience(workingAudience)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_LIFE))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(REFRESH_TOKEN_LIFE)))
                 .build();
 
         return refreshTokenRepository.save(token).getId().toString();
@@ -58,7 +62,7 @@ public class RefreshTokenProvider implements RefreshTokenService {
 
     @Override
     public boolean isTokenValid(String token, String username) {
-        Date now = new Date(System.currentTimeMillis());
+        Date now = Date.from(clock.instant());
         UUID uuid = UUID.fromString(token);
         RefreshToken refreshToken = refreshTokenRepository.findById(uuid)
                 .orElseThrow(() -> new RefreshTokenNotFoundException("Refresh token not found"));
