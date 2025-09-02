@@ -74,7 +74,6 @@ public class JwtTokenProvider implements JwtService {
                 .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_LIFE))
                 .claims(Map.of(CLAIM_SCOPES, collector.getEndpoints()))
                 .signWith(getPrivateKey()).compact();
-
     }
 
     @Override

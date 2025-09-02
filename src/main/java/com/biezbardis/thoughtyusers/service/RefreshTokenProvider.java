@@ -3,9 +3,11 @@ package com.biezbardis.thoughtyusers.service;
 import com.biezbardis.thoughtyusers.entity.RefreshToken;
 import com.biezbardis.thoughtyusers.entity.User;
 import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotFoundException;
-import com.biezbardis.thoughtyusers.repository.redis.RefreshTokenRepository;
+import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotValidException;
 import com.biezbardis.thoughtyusers.repository.jpa.UserRepository;
+import com.biezbardis.thoughtyusers.repository.redis.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenProvider implements RefreshTokenService {
@@ -46,7 +49,8 @@ public class RefreshTokenProvider implements RefreshTokenService {
     public String refreshAccessToken(String accessToken, String refreshToken) {
         String userName = jwtService.extractUserName(accessToken);
         if (userName == null) {
-            throw new IllegalArgumentException("Access token has no subject");
+            log.info("Rejected token update request. Reason: JSON Web Token has no subject.");
+            throw new RefreshTokenNotValidException("Access token has no subject");
         }
 
         User user = userRepository.findByUsername(userName)
@@ -54,7 +58,8 @@ public class RefreshTokenProvider implements RefreshTokenService {
 
         if (!isTokenValid(refreshToken, user.getUsername())) {
             revoke(refreshToken);
-            throw new IllegalStateException("Refresh token is no longer valid");
+            log.info("Rejected request from user: {}. Reason: Token {} is expired.", userName, refreshToken);
+            throw new RefreshTokenNotValidException("Refresh token is expired");
         }
 
         return jwtService.generateAccessToken(user.getUsername());

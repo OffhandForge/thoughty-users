@@ -10,6 +10,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class TestUtils {
     public static KeyPair getSecurityKeys() {
@@ -52,5 +54,23 @@ public class TestUtils {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getExpiration();
+    }
+
+    public static String generateExpiredAccessToken(String username,
+                                             PrivateKey privateKey,
+                                             String issuingAuthority,
+                                             String workingAudience,
+                                             List<String> scopes) {
+        long oneHourInThePast = 3600 * 1000L;
+
+        return Jwts.builder()
+                .issuer(issuingAuthority)
+                .subject(username)
+                .audience().add(workingAudience).and()
+                .issuedAt(new Date(System.currentTimeMillis() - oneHourInThePast))
+                .expiration(new Date(System.currentTimeMillis() - oneHourInThePast))
+                .claims(Map.of("scopes", scopes))
+                .signWith(privateKey)
+                .compact();
     }
 }
