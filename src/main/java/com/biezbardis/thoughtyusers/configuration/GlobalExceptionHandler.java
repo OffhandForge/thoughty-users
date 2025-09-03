@@ -8,6 +8,7 @@ import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotValidException;
 import com.biezbardis.thoughtyusers.exceptions.ResourceNotFoundException;
 import com.biezbardis.thoughtyusers.exceptions.TooManyAttemptsException;
 import com.biezbardis.thoughtyusers.exceptions.UnauthorizedException;
+import io.jsonwebtoken.JwtException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -77,12 +78,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({AuthenticationException.class,
+            JwtException.class,
             RefreshTokenNotValidException.class,
             UnauthorizedException.class
     })
     public ResponseEntity<ErrorResponse> handleAuthenticationException(RuntimeException ex, WebRequest request) {
         String errorMessage;
-        if (ex instanceof RefreshTokenNotValidException || ex instanceof UnauthorizedException) {
+        if (ex instanceof RefreshTokenNotValidException || ex instanceof UnauthorizedException || ex instanceof JwtException) {
             errorMessage = ex.getMessage();
         } else {
             errorMessage = "An authentication error occurred.";

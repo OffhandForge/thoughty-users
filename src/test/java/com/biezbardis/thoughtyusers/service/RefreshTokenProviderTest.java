@@ -7,6 +7,7 @@ import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotFoundException;
 import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotValidException;
 import com.biezbardis.thoughtyusers.repository.jpa.UserRepository;
 import com.biezbardis.thoughtyusers.repository.redis.RefreshTokenRepository;
+import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -140,7 +141,7 @@ class RefreshTokenProviderTest {
     void refreshToken_ShouldThrowRefreshTokenNotValidExceptionWhenAccessTokenIsInvalid() {
         when(jwtService.extractUserName("invalid-jwt")).thenReturn(null);
 
-        RefreshTokenNotValidException thrown = assertThrows(RefreshTokenNotValidException.class, () ->
+        JwtException thrown = assertThrows(JwtException.class, () ->
                 refreshTokenProvider.refreshAccessToken("invalid-jwt", "refresh.token"));
         assertEquals("Access token has no subject", thrown.getMessage());
     }
@@ -149,7 +150,7 @@ class RefreshTokenProviderTest {
     void refreshAccessToken_ShouldThrowRefreshTokenNotValidException_WhenAccessTokenHasNoSubject() {
         when(jwtService.extractUserName("bad")).thenReturn(null);
 
-        RefreshTokenNotValidException thrown = assertThrows(RefreshTokenNotValidException.class, () ->
+        JwtException thrown = assertThrows(JwtException.class, () ->
                 refreshTokenProvider.refreshAccessToken("bad", UUID.randomUUID().toString())
         );
 

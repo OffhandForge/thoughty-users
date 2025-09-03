@@ -6,6 +6,7 @@ import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotFoundException;
 import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotValidException;
 import com.biezbardis.thoughtyusers.repository.jpa.UserRepository;
 import com.biezbardis.thoughtyusers.repository.redis.RefreshTokenRepository;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,7 +51,7 @@ public class RefreshTokenProvider implements RefreshTokenService {
         String userName = jwtService.extractUserName(accessToken);
         if (userName == null) {
             log.info("Rejected token update request. Reason: JSON Web Token has no subject.");
-            throw new RefreshTokenNotValidException("Access token has no subject");
+            throw new JwtException("Access token has no subject");
         }
 
         User user = userRepository.findByUsername(userName)
