@@ -55,17 +55,13 @@ The Users Service created with the following main dependencies:
 
 ## 8. **Testing**
 
-Continuous improvement.
-
 - Unit tests created using JUnit 5 and Mockito.
 - Integration tests created using Testcontainers and MockMvc.
 
 ## 9. **API Documentation**
 
-To be implemented.
-
-- Use Swagger/OpenAPI to document API endpoints.
-- Include example requests and responses.
+- Service Interfaces documented.
+- Created OpenAPI documentation for controllers.
 
 ## 10. **Deployment and CI/CD**
 
