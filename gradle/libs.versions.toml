@@ -1,13 +1,13 @@
 [versions]
-spring-boot = "3.5.4"
+spring-boot = "3.5.5"
 spring-dependency-management = "1.1.7"
 benmanes = "0.52.0"
 
 lombok = "1.18.38"
 
 jjwt = "0.13.0"
-springdoc = "2.8.10"
-groovy = "4.0.28"
+springdoc = "2.8.11"
+groovy = "5.0.0"
 postgresql = "42.7.7"
 liquibase = "4.33.0"
 
@@ -54,6 +54,7 @@ postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "pos
 # Liquibase
 liquibase = { group = "org.liquibase", name = "liquibase-core", version.ref = "liquibase" }
 # Test
+junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
 junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit" }
 junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit" }
 junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit" }

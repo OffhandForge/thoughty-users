@@ -5,6 +5,7 @@ import com.biezbardis.thoughtyusers.dto.RegisterRequest;
 import com.biezbardis.thoughtyusers.entity.Role;
 import com.biezbardis.thoughtyusers.entity.User;
 import com.biezbardis.thoughtyusers.exceptions.AlreadyInUseException;
+import com.biezbardis.thoughtyusers.exceptions.UnauthorizedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,17 +14,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,15 +37,13 @@ class AuthenticationServiceTest {
     @Mock
     private JwtService jwtService;
     @Mock
+    private LoginAttemptService loginAttemptService;
+    @Mock
     private PasswordEncoder passwordEncoder;
-    @Mock
-    private UserDetails userDetails;
-    @Mock
-    private UserDetailsService userDetailsService;
     @Mock
     private UserService userService;
     @InjectMocks
-    private AuthenticationService authenticationService;
+    private AuthenticationServiceImpl authenticationService;
 
     private RegisterRequest regRequest;
     private AuthenticationRequest authRequest;
@@ -54,17 +55,38 @@ class AuthenticationServiceTest {
         regRequest.setEmail("test@example.com");
         regRequest.setPassword("plainPassword");
 
-        authRequest = new AuthenticationRequest();
-        authRequest.setUsername("test_user");
-        authRequest.setPassword("plainPassword");
+        authRequest = new AuthenticationRequest("test_user", "plainPassword");
+    }
 
-        userDetails = new User(
-                1L,
-                regRequest.getUsername(),
-                regRequest.getPassword(),
-                regRequest.getEmail(),
-                Role.ROLE_ADMIN
-        );
+    @Test
+    void register_ShouldCreateUserAndReturnJwtToken() {
+        when(passwordEncoder.encode(regRequest.getPassword())).thenReturn("encodedPassword");
+        when(jwtService.generateAccessToken(regRequest.getUsername())).thenReturn("access-token");
+
+        String actual = authenticationService.register(regRequest);
+
+        assertEquals("access-token", actual);
+        verify(passwordEncoder).encode(regRequest.getPassword());
+        verify(userService).create(argThat(user ->
+                user.getUsername().equals(regRequest.getUsername()) &&
+                        user.getEmail().equals(regRequest.getEmail()) &&
+                        user.getPassword().equals("encodedPassword") &&
+                        user.getRole() == Role.ROLE_USER
+        ));
+        verify(jwtService).generateAccessToken(regRequest.getUsername());
+    }
+
+    @Test
+    void register_ShouldUseEncodedPassword_NotRawPassword() {
+        when(passwordEncoder.encode(regRequest.getPassword())).thenReturn("encodedPassword");
+        when(jwtService.generateAccessToken(regRequest.getUsername())).thenReturn("access-token");
+
+        authenticationService.register(regRequest);
+
+        verify(userService).create(argThat(user ->
+                !user.getPassword().equals(regRequest.getPassword()) &&
+                        user.getPassword().equals("encodedPassword")
+        ));
     }
 
     @Test
@@ -80,7 +102,7 @@ class AuthenticationServiceTest {
                 .build();
 
         when(passwordEncoder.encode(regRequest.getPassword())).thenReturn(encodedPassword);
-        when(jwtService.generateAccessToken("test_user")).thenReturn(expectedAccessToken);
+        when(jwtService.generateAccessToken(regRequest.getUsername())).thenReturn(expectedAccessToken);
 
         var token = authenticationService.register(regRequest);
 
@@ -98,7 +120,7 @@ class AuthenticationServiceTest {
 
     @Test
     void register_ShouldThrowExceptionWhenUsernameAlreadyExists() {
-        when(passwordEncoder.encode(anyString())).thenReturn("encoded");
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         doThrow(new AlreadyInUseException("Username already exists"))
                 .when(userService).create(any(User.class));
 
@@ -106,39 +128,31 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void login_ShouldReturnTokenWhenCredentialsAreValid() {
-        String accessToken = "access-token";
-        var authToken = new UsernamePasswordAuthenticationToken(
-                userDetails.getUsername(),
-                userDetails.getPassword()
-        );
+    void login_ShouldReturnJwtToken_WhenAuthenticationSuccessful() {
+        Authentication auth = mock(Authentication.class);
 
-        when(authenticationManager.authenticate(authToken)).thenReturn(authToken);
-        when(jwtService.generateAccessToken(userDetails.getUsername())).thenReturn(accessToken);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenReturn(auth);
+        when(auth.getName()).thenReturn(authRequest.getUsername());
+        when(jwtService.generateAccessToken(authRequest.getUsername())).thenReturn("access-token");
 
-        var token = authenticationService.login(authRequest);
+        String token = authenticationService.login(authRequest);
 
-        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(jwtService).generateAccessToken(userDetails.getUsername());
-
-        assertEquals(accessToken, token);
+        assertEquals("access-token", token);
+        verify(loginAttemptService).loginSucceeded(authRequest.getUsername());
+        verify(jwtService).generateAccessToken(authRequest.getUsername());
     }
 
     @Test
-    void login_ShouldThrowExceptionWhenAuthenticationFails() {
-        doThrow(new BadCredentialsException("Bad credentials"))
-                .when(authenticationManager)
-                .authenticate(any(UsernamePasswordAuthenticationToken.class));
+    void login_ShouldThrowUnauthorizedException_WhenAuthenticationFails() {
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(mock(AuthenticationException.class));
 
-        assertThrows(BadCredentialsException.class, () -> authenticationService.login(authRequest));
-    }
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class,
+                () -> authenticationService.login(authRequest));
 
-    @Test
-    void login_ShouldThrowExceptionWhenUserNotFound() {
-        when(authenticationManager.authenticate(any()))
-                .thenThrow(new BadCredentialsException("Bad credentials"));
-
-        var thrown = assertThrows(BadCredentialsException.class, () -> authenticationService.login(authRequest));
-        assertEquals("Bad credentials", thrown.getMessage());
+        assertEquals("Invalid credentials", ex.getMessage());
+        verify(loginAttemptService).loginFailed(authRequest.getUsername());
+        verify(jwtService, never()).generateAccessToken(anyString());
     }
 }

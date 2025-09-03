@@ -14,7 +14,7 @@ public class RegisterRequest {
     @Schema(description = "Username", example = "John_Doe")
     @Size(min = 5, max = 50, message = "Username must be between 5 and 50 characters long")
     @NotBlank(message = "Username cannot be empty")
-    @Pattern(regexp = "^[a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9])[a-zA-Z0-9]$",
+    @Pattern(regexp = "^[a-zA-Z0-9][a-zA-Z0-9._-]{3,48}[a-zA-Z0-9]$",
             message = "Username must start and end with alphanumeric characters and may contain digits, dot (.), underscore (_), or hyphen (-)")
     private String username;
 
@@ -25,10 +25,10 @@ public class RegisterRequest {
     @Pattern(regexp = "^[A-Za-z0-9._+-]+@[a-z0-9.-]+\\.[a-z]{2,6}$", message = "Invalid email format")
     private String email;
 
-    @Schema(description = "Password", example = "my_1secret1_password")
+    @Schema(description = "Password", example = "My_1secret1_p@ssword")
     @Size(min = 8, max = 64, message = "Password length must be between 8 and 64 characters")
     @NotBlank(message = "Password cannot be empty")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&-+=()])(?=\\S+$)$",
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&-+=()])(?=\\S+$).{8,64}$",
             message = "Password must contains of at least one digit, one small letter, one capital letter and one symbol")
     private String password;
 }

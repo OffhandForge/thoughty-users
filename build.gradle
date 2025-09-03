@@ -24,6 +24,19 @@ configurations {
     }
 }
 
+configurations.configureEach {
+    resolutionStrategy {
+        eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'org.junit') {
+                details.useVersion "5.13.4"
+            }
+            if (details.requested.group == 'org.junit.platform') {
+                details.useVersion( "1.13.4")
+            }
+        }
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -44,6 +57,7 @@ dependencies {
     // Liquibase
     implementation libs.liquibase
     // Test
+    testImplementation platform(libs.junit.bom)
     testRuntimeOnly libs.junit.platform.launcher
     testImplementation libs.bundles.tests
     mockitoAgent libs.mockito
