@@ -3,16 +3,22 @@ package com.biezbardis.thoughtyusers.service;
 import com.biezbardis.thoughtyusers.entity.RefreshToken;
 import com.biezbardis.thoughtyusers.entity.User;
 import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotFoundException;
-import com.biezbardis.thoughtyusers.repository.redis.RefreshTokenRepository;
+import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotValidException;
 import com.biezbardis.thoughtyusers.repository.jpa.UserRepository;
+import com.biezbardis.thoughtyusers.repository.redis.RefreshTokenRepository;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenProvider implements RefreshTokenService {
@@ -24,15 +30,17 @@ public class RefreshTokenProvider implements RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final Clock clock;
 
     @Override
     public String generateTokenForUser(String username) {
-        var token = RefreshToken.builder()
+        Instant now = Instant.now(clock);
+        RefreshToken token = RefreshToken.builder()
                 .username(username)
                 .issuer(issuingAuthority)
                 .audience(workingAudience)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_LIFE))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(REFRESH_TOKEN_LIFE)))
                 .build();
 
         return refreshTokenRepository.save(token).getId().toString();
@@ -42,7 +50,8 @@ public class RefreshTokenProvider implements RefreshTokenService {
     public String refreshAccessToken(String accessToken, String refreshToken) {
         String userName = jwtService.extractUserName(accessToken);
         if (userName == null) {
-            throw new IllegalArgumentException("Access token has no subject");
+            log.info("Rejected token update request. Reason: JSON Web Token has no subject.");
+            throw new JwtException("Access token has no subject");
         }
 
         User user = userRepository.findByUsername(userName)
@@ -50,7 +59,8 @@ public class RefreshTokenProvider implements RefreshTokenService {
 
         if (!isTokenValid(refreshToken, user.getUsername())) {
             revoke(refreshToken);
-            throw new IllegalStateException("Refresh token is no longer valid");
+            log.info("Rejected request from user: {}. Reason: Token {} is not valid.", userName, refreshToken);
+            throw new RefreshTokenNotValidException("Refresh token is not valid");
         }
 
         return jwtService.generateAccessToken(user.getUsername());
@@ -58,9 +68,9 @@ public class RefreshTokenProvider implements RefreshTokenService {
 
     @Override
     public boolean isTokenValid(String token, String username) {
-        Date now = new Date(System.currentTimeMillis());
-        var uuid = UUID.fromString(token);
-        var refreshToken = refreshTokenRepository.findById(uuid)
+        Date now = Date.from(clock.instant());
+        UUID uuid = UUID.fromString(token);
+        RefreshToken refreshToken = refreshTokenRepository.findById(uuid)
                 .orElseThrow(() -> new RefreshTokenNotFoundException("Refresh token not found"));
 
         boolean isUserValid = refreshToken.getUsername().equals(username);
