@@ -27,7 +27,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public String register(RegisterRequest request) {
 
-        var user = User.builder()
+        User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -49,7 +49,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             ));
             loginAttemptService.loginSucceeded(request.getUsername());
         } catch (AuthenticationException e) {
-            log.info("Authentication failed for user {}", request.getUsername());
+            log.info("Authentication failed for user: {}", request.getUsername());
             loginAttemptService.loginFailed(request.getUsername());
             throw new UnauthorizedException("Invalid credentials", e);
         }

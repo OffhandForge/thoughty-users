@@ -18,6 +18,8 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,6 +47,8 @@ public class JwtTokenProvider implements JwtService {
 
     @NonNull
     private final EndpointCollector collector;
+    @NonNull
+    private final Clock clock;
 
     @Override
     public Set<String> extractScopes(String token) {
@@ -66,15 +70,15 @@ public class JwtTokenProvider implements JwtService {
 
     @Override
     public String generateAccessToken(String username) {
+        Instant now = clock.instant();
         return Jwts.builder()
                 .issuer(issuingAuthority)
                 .subject(username)
                 .audience().add(workingAudience).and()
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_LIFE))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(ACCESS_TOKEN_LIFE)))
                 .claims(Map.of(CLAIM_SCOPES, collector.getEndpoints()))
                 .signWith(getPrivateKey()).compact();
-
     }
 
     @Override
@@ -94,14 +98,8 @@ public class JwtTokenProvider implements JwtService {
 
     @Override
     public boolean isTokenExpired(String token) {
-        Date exp;
-        try {
-            exp = extractExpiration(token);
-        } catch (ExpiredJwtException e) {
-            log.info("User {} has provided an expired token.", extractUserName(token), e);
-            return true;
-        }
-        return exp.before(new Date(System.currentTimeMillis()));
+        Date exp = extractExpiration(token);
+        return exp.before(Date.from(clock.instant()));
     }
 
     private Set<String> extractAudience(String token) {
@@ -122,11 +120,17 @@ public class JwtTokenProvider implements JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getPublicKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            return Jwts.parser()
+                    .verifyWith(getPublicKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            Claims claims = e.getClaims();
+            log.info("User {} has provided an expired token.", claims.getSubject(), e);
+            return claims;
+        }
     }
 
     /**
@@ -140,7 +144,7 @@ public class JwtTokenProvider implements JwtService {
                 .replaceAll("\\s+", "");
 
         byte[] keyBytes = Base64.getDecoder().decode(key);
-        var spec = new PKCS8EncodedKeySpec(keyBytes);
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
 
         try {
             return KeyFactory.getInstance("RSA").generatePrivate(spec);
