@@ -417,7 +417,7 @@ public class ThoughtyUsersApplicationTests {
             assertErrorResponse(errorResponse,
                     HttpStatus.UNAUTHORIZED,
                     "Unauthorized",
-                    "Refresh token is expired",
+                    "Refresh token is not valid",
                     "uri=%s".formatted(REFRESH_TOKEN_URI));
         }
 

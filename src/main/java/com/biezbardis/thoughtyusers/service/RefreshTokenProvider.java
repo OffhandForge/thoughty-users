@@ -58,8 +58,8 @@ public class RefreshTokenProvider implements RefreshTokenService {
 
         if (!isTokenValid(refreshToken, user.getUsername())) {
             revoke(refreshToken);
-            log.info("Rejected request from user: {}. Reason: Token {} is expired.", userName, refreshToken);
-            throw new RefreshTokenNotValidException("Refresh token is expired");
+            log.info("Rejected request from user: {}. Reason: Token {} is not valid.", userName, refreshToken);
+            throw new RefreshTokenNotValidException("Refresh token is not valid");
         }
 
         return jwtService.generateAccessToken(user.getUsername());

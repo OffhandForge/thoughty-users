@@ -178,7 +178,7 @@ class RefreshTokenProviderTest {
         RefreshTokenNotValidException thrown = assertThrows(RefreshTokenNotValidException.class, () ->
                 refreshTokenProvider.refreshAccessToken("jwt", refreshToken.getId().toString()));
 
-        assertEquals("Refresh token is expired", thrown.getMessage());
+        assertEquals("Refresh token is not valid", thrown.getMessage());
         verify(refreshTokenRepository).deleteById(refreshToken.getId());
     }
 
