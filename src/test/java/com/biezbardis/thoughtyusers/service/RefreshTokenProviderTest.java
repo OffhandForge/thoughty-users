@@ -4,6 +4,7 @@ import com.biezbardis.thoughtyusers.entity.RefreshToken;
 import com.biezbardis.thoughtyusers.entity.Role;
 import com.biezbardis.thoughtyusers.entity.User;
 import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotFoundException;
+import com.biezbardis.thoughtyusers.exceptions.RefreshTokenNotValidException;
 import com.biezbardis.thoughtyusers.repository.jpa.UserRepository;
 import com.biezbardis.thoughtyusers.repository.redis.RefreshTokenRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -136,19 +137,19 @@ class RefreshTokenProviderTest {
     }
 
     @Test
-    void refreshToken_ShouldThrowIllegalArgumentExceptionWhenAccessTokenIsInvalid() {
+    void refreshToken_ShouldThrowRefreshTokenNotValidExceptionWhenAccessTokenIsInvalid() {
         when(jwtService.extractUserName("invalid-jwt")).thenReturn(null);
 
-        var thrown = assertThrows(IllegalArgumentException.class, () ->
+        RefreshTokenNotValidException thrown = assertThrows(RefreshTokenNotValidException.class, () ->
                 refreshTokenProvider.refreshAccessToken("invalid-jwt", "refresh.token"));
         assertEquals("Access token has no subject", thrown.getMessage());
     }
 
     @Test
-    void refreshAccessToken_ShouldThrow_WhenAccessTokenHasNoSubject() {
+    void refreshAccessToken_ShouldThrowRefreshTokenNotValidException_WhenAccessTokenHasNoSubject() {
         when(jwtService.extractUserName("bad")).thenReturn(null);
 
-        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () ->
+        RefreshTokenNotValidException thrown = assertThrows(RefreshTokenNotValidException.class, () ->
                 refreshTokenProvider.refreshAccessToken("bad", UUID.randomUUID().toString())
         );
 
@@ -166,7 +167,7 @@ class RefreshTokenProviderTest {
     }
 
     @Test
-    void refreshToken_ShouldRevokeAndThrowIllegalStateExceptionWhenAccessTokenIsInvalid() {
+    void refreshToken_ShouldRevokeAndThrowRefreshTokenNotValidExceptionWhenAccessTokenIsInvalid() {
         User user = new User();
         user.setUsername("user");
 
@@ -174,10 +175,10 @@ class RefreshTokenProviderTest {
         when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
         when(refreshTokenRepository.findById(refreshToken.getId())).thenReturn(Optional.of(refreshToken));
 
-        var thrown = assertThrows(IllegalStateException.class, () ->
+        RefreshTokenNotValidException thrown = assertThrows(RefreshTokenNotValidException.class, () ->
                 refreshTokenProvider.refreshAccessToken("jwt", refreshToken.getId().toString()));
 
-        assertEquals("Refresh token is no longer valid", thrown.getMessage());
+        assertEquals("Refresh token is expired", thrown.getMessage());
         verify(refreshTokenRepository).deleteById(refreshToken.getId());
     }
 

@@ -18,6 +18,8 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,6 +47,8 @@ public class JwtTokenProvider implements JwtService {
 
     @NonNull
     private final EndpointCollector collector;
+    @NonNull
+    private final Clock clock;
 
     @Override
     public Set<String> extractScopes(String token) {
@@ -66,12 +70,13 @@ public class JwtTokenProvider implements JwtService {
 
     @Override
     public String generateAccessToken(String username) {
+        Instant now = clock.instant();
         return Jwts.builder()
                 .issuer(issuingAuthority)
                 .subject(username)
                 .audience().add(workingAudience).and()
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_LIFE))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(ACCESS_TOKEN_LIFE)))
                 .claims(Map.of(CLAIM_SCOPES, collector.getEndpoints()))
                 .signWith(getPrivateKey()).compact();
     }
@@ -94,7 +99,7 @@ public class JwtTokenProvider implements JwtService {
     @Override
     public boolean isTokenExpired(String token) {
         Date exp = extractExpiration(token);
-        return exp.before(new Date(System.currentTimeMillis()));
+        return exp.before(Date.from(clock.instant()));
     }
 
     private Set<String> extractAudience(String token) {

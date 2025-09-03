@@ -2,6 +2,7 @@ package com.biezbardis.thoughtyusers.service;
 
 import com.biezbardis.thoughtyusers.entity.Role;
 import com.biezbardis.thoughtyusers.entity.User;
+import com.biezbardis.thoughtyusers.utils.JjwtClockAdapter;
 import com.biezbardis.thoughtyusers.utils.TestUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -14,6 +15,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.KeyPair;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -30,14 +34,21 @@ import static org.mockito.Mockito.lenient;
 class JwtTokenProviderTest {
 
     @Mock
+    private Clock clock;
+    @Mock
     private EndpointCollector endpointCollector;
     @InjectMocks
     private JwtTokenProvider jwtTokenProvider;
 
     private KeyPair keyPair;
+    private Instant now;
 
     @BeforeEach
     void setup() {
+        now = Instant.parse("2025-08-30T10:00:00Z");
+        lenient().when(clock.instant()).thenReturn(now);
+        lenient().when(clock.getZone()).thenReturn(ZoneOffset.UTC);
+
         keyPair = TestUtils.getSecurityKeys();
 
         String privateKey = TestUtils.encodePrivateKeyToPEM(keyPair.getPrivate());
@@ -61,6 +72,7 @@ class JwtTokenProviderTest {
         String token = jwtTokenProvider.generateAccessToken("test_user");
 
         Claims claims = Jwts.parser()
+                .clock(new JjwtClockAdapter(clock))
                 .verifyWith(keyPair.getPublic())
                 .build()
                 .parseSignedClaims(token)
@@ -116,18 +128,15 @@ class JwtTokenProviderTest {
     }
 
     @Test
-    void isTokenExpired_ShouldReturnTrueForExpiredToken() throws InterruptedException {
+    void isTokenExpired_ShouldReturnTrueForExpiredToken() {
         String token = Jwts.builder()
                 .issuer("test-issuer")
                 .subject("test_user")
                 .audience().add("test-audience").and()
-                .expiration(new Date(System.currentTimeMillis() + 10)) // истечёт через 10 мс
+                .expiration(Date.from(now.minusSeconds(1)))
                 .signWith(keyPair.getPrivate())
                 .compact();
 
-        Thread.sleep(20); // ждём, чтобы точно протух
-
         assertTrue(jwtTokenProvider.isTokenExpired(token));
     }
-
 }
