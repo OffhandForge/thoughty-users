@@ -81,6 +81,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isScopeValid(String jwt, HttpServletRequest request) {
-        return jwtService.extractScopes(jwt).contains(request.getMethod() + " " + request.getRequestURI());
+        String contextPath = request.getContextPath() == null ? "" : request.getContextPath();
+        String normalizedPath = request.getRequestURI().substring(contextPath.length());
+        String required = request.getMethod() + " " + normalizedPath;
+        return jwtService.extractScopes(jwt).contains(required);
     }
 }
